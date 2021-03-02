@@ -1,0 +1,20 @@
+[package]
+name = "cafecoder-docker-rs"
+version = "0.1.0"
+authors = ["earlgray <earlgray283@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0"
+chrono = {version = "0.4", features = ["serde"]}
+dotenv = "0.15.0"
+rocket = {git = "https://github.com/SergioBenitez/Rocket"}# allow async
+rocket_contrib = {git = "https://github.com/SergioBenitez/Rocket"}# allow async
+serde = {version = "1.0", features = ["derive"]}
+serde_json = "1.0"
+sqlx = {version = "0.5.1", features = ["runtime-tokio-rustls", "mysql", "chrono", "json"]}
+tokio = {version = "1.2.0", features = ["full"]}
+cloud-storage = { version = "0.8", features = ["sync"] }
+#cafecoder = {git = "https://github.com/cafecoder-dev/cafecoder-rs", branch = "main"}
