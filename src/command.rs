@@ -1,3 +1,5 @@
+use crate::model::*;
+use anyhow::Result;
 use std::{
     fs::{File, Permissions},
     io::Write,
@@ -6,8 +8,6 @@ use std::{
     sync::{Arc, Mutex},
     time::{Duration, Instant},
 };
-use crate::model::*;
-use anyhow::Result;
 use tokio::time::sleep;
 
 pub fn create_sh(cmd: &str) -> Result<()> {
@@ -29,8 +29,8 @@ export PATH="$HOME/.cargo/bin:$PATH"
     Ok(())
 }
 
-pub async fn exec_cmd(req: &RequestJson) -> Result<CmdResult> {
-    create_sh(&req.cmd)?;
+pub async fn exec_cmd(cmd: &str, time_limit: i32) -> Result<CmdResult> {
+    create_sh(cmd)?;
 
     let mut cmd = Command::new("sh");
     cmd.arg("-c")
@@ -54,18 +54,17 @@ pub async fn exec_cmd(req: &RequestJson) -> Result<CmdResult> {
         let res = child.lock().unwrap().wait();
         let end = start.elapsed();
 
-        (res, end.as_millis())
+        (res, end.as_millis() as i32)
     };
 
     let timeout = async {
-        sleep(Duration::new(req.time_limit as u64, 0)).await;
-        ()
+        sleep(Duration::new(time_limit as u64, 0)).await;
     };
 
     let time = tokio::select! {
         _ = timeout => {
             child_arc.lock().unwrap().kill()?; // todo: 子プロセスも kill
-            req.time_limit as u128
+            time_limit
         }
         res = cmd_handler => res.1
     };
@@ -77,6 +76,7 @@ pub async fn exec_cmd(req: &RequestJson) -> Result<CmdResult> {
             == &*"0",
         time,
         message: String::from_utf8(std::fs::read("/userStderr.txt")?).unwrap(),
+        stdout_size: 0, // todo
         mem_usage: String::from_utf8(std::fs::read("/mem_usage.txt")?)
             .unwrap()
             .trim_end()
