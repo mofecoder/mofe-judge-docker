@@ -1,5 +1,6 @@
-mod compilation;
-mod judge;
+pub mod compile;
+pub mod download;
+pub mod judge;
 
 use anyhow::Error;
 use rocket::{
