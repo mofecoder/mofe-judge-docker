@@ -18,7 +18,7 @@ pub async fn download_testcase(
     problem_uuid: &str,
     testcase_name: &str,
 ) -> Result<(Vec<u8>, Vec<u8>)> {
-    let _ =  std::env::var("GOOGLE_APPLICATION_CREDENTIALS")?;
+    let _ = std::env::var("GOOGLE_APPLICATION_CREDENTIALS")?;
 
     let input_bytes = Object::download(
         TESTCASE_BUCKET,
