@@ -6,6 +6,7 @@ mod config;
 mod db;
 mod gcp;
 mod model;
+mod sandbox;
 
 #[macro_use]
 extern crate rocket;

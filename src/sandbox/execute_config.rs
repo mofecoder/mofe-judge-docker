@@ -2,9 +2,9 @@
 pub struct ExecuteConfig {
     pub meta: Option<String>,
     pub mem: Option<u64>,
-    pub time: Option<u64>,
-    pub wall_time: Option<u64>,
-    pub extra_time: Option<u64>,
+    pub time: Option<f64>,
+    pub wall_time: Option<f64>,
+    pub extra_time: Option<f64>,
     pub stack: Option<u64>,
     pub fsize: Option<u64>,
     pub quota: Option<u64>,
@@ -65,13 +65,13 @@ impl Default for ExecuteConfig {
 impl ExecuteConfig {
     pub fn build_flags(&self) -> Vec<String> {
         let mut args: Vec<String> = Vec::new();
-        
+
         macro_rules! push_arg {
             ($a:expr, $b:expr) => {
                 if let Some(value) = &$b {
                     args.push(format!($a, value));
                 }
-            }
+            };
         }
 
         macro_rules! push_flag {
@@ -79,7 +79,7 @@ impl ExecuteConfig {
                 if $b {
                     args.push($a.to_string())
                 }
-            }
+            };
         }
 
         // 引数を処理する
@@ -97,7 +97,7 @@ impl ExecuteConfig {
         push_arg!("--chdir={}", self.chdir);
         push_arg!("--processes={}", self.processes);
         push_arg!("--cg-mem={}", self.cg_mem);
-        
+
         // フラグを処理する
         push_flag!("--stderr-to-stdout", self.stderr_to_stdout);
         push_flag!("--verbose", self.verbose);
