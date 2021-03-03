@@ -58,7 +58,11 @@ impl Sandbox {
         Ok(Sandbox { id, path })
     }
 
-    fn execute(&self, config: &ExecuteConfig, command: Vec<String>) -> Result<std::process::Output> {
+    fn execute(
+        &self,
+        config: &ExecuteConfig,
+        command: Vec<String>,
+    ) -> Result<std::process::Output> {
         let mut args = config.build_flags();
         args.push(format!("--box-id={}", self.id));
         args.push("--run".to_string());
@@ -89,16 +93,61 @@ mod tests {
         Sandbox::create(0u32).unwrap();
         Sandbox::cleanup(0u32).unwrap();
     }
-    
+
     #[test]
     fn test_sandbox_execute() {
         let sandbox = Sandbox::create(0u32).unwrap();
-        let output = sandbox.execute(
-            &Default::default(), 
-            vec!["/usr/bin/echo".to_string(), "test_sandbox_execute".to_string()]
-        ).unwrap();
+        let output = sandbox
+            .execute(
+                &Default::default(),
+                vec![
+                    "/usr/bin/echo".to_string(),
+                    "test_sandbox_execute".to_string(),
+                ],
+            )
+            .unwrap();
         let output = String::from_utf8_lossy(&output.stdout).trim().to_string();
 
         assert!(output == "test_sandbox_execute");
+    }
+
+    #[test]
+    fn test_bash_script() {
+        let sandbox = Sandbox::create(0u32).unwrap();
+        let path = sandbox.path.clone().join("test.sh");
+        std::fs::write(path, "#!/bin/sh\necho test_bash_script\n").unwrap();
+        let output = sandbox
+            .execute(
+                &Default::default(),
+                vec!["/bin/sh".to_string(), "test.sh".to_string()],
+            )
+            .unwrap();
+        let output = String::from_utf8_lossy(&output.stdout).trim().to_string();
+
+        assert!(output == "test_bash_script");
+    }
+
+    #[test]
+    fn test_bash_script_timeout() {
+        let sandbox = Sandbox::create(0u32).unwrap();
+        let meta_path = sandbox.path.clone().join("meta.txt");
+        let script_path = sandbox.path.clone().join("test.sh");
+
+        std::fs::write(&script_path, "#!/bin/sh\nsleep 5\necho test_bash_script\n").unwrap();
+        let _output = sandbox
+            .execute(
+                &ExecuteConfig {
+                    meta: Some("meta.txt".to_string()),
+                    time: Some(0.01),
+                    wall_time: Some(0.01),
+                    processes: Some(2), // sleep は外部プロセス
+                    ..Default::default()
+                },
+                vec!["/bin/sh".to_string(), "test.sh".to_string()],
+            )
+            .unwrap();
+
+        let meta = std::fs::read_to_string(&meta_path).unwrap();
+        assert!(meta.find("status:TO").is_some());
     }
 }
