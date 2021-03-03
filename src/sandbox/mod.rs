@@ -1,6 +1,8 @@
 mod execute_config;
+mod meta;
 
-use execute_config::ExecuteConfig;
+pub use execute_config::ExecuteConfig;
+pub use meta::Meta;
 
 use anyhow::{anyhow, Result};
 use std::path::PathBuf;
@@ -14,7 +16,7 @@ pub struct Sandbox {
 }
 
 impl Sandbox {
-    fn check_installation() -> Result<()> {
+    pub fn check_installation() -> Result<()> {
         Command::new("which")
       .arg("isolate")
       .status()
@@ -28,7 +30,7 @@ impl Sandbox {
       })
     }
 
-    fn cleanup(id: SandboxId) -> Result<()> {
+    pub fn cleanup(id: SandboxId) -> Result<()> {
         let ok = Command::new("isolate")
             .args(&["--cg", "--cleanup", &format!("--box-id={}", id)])
             .status()
@@ -42,7 +44,7 @@ impl Sandbox {
         }
     }
 
-    fn create(id: SandboxId) -> Result<Self> {
+    pub fn create(id: SandboxId) -> Result<Self> {
         Self::cleanup(id)?;
 
         let output = Command::new("isolate")
@@ -58,7 +60,7 @@ impl Sandbox {
         Ok(Sandbox { id, path })
     }
 
-    fn execute(
+    pub fn execute(
         &self,
         config: &ExecuteConfig,
         command: Vec<String>,
