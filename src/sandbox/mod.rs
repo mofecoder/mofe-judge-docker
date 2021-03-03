@@ -16,18 +16,19 @@ pub struct Sandbox {
 }
 
 impl Sandbox {
+    #[allow(dead_code)]
     pub fn check_installation() -> Result<()> {
         Command::new("which")
-      .arg("isolate")
-      .status()
-      .map_err(anyhow::Error::from)
-      .and_then(|status| {
-        if status.success() {
-          Ok(())
-        } else {
-          Err(anyhow!("isolate is not found. Please make sure you have installed ioi/isolate correctly.")) 
-        }
-      })
+            .arg("isolate")
+            .status()
+            .map_err(anyhow::Error::from)
+            .and_then(|status| {
+                if status.success() {
+                    Ok(())
+                } else {
+                    Err(anyhow!("isolate is not found. Please make sure you have installed ioi/isolate correctly.")) 
+                }
+            })
     }
 
     pub fn cleanup(id: SandboxId) -> Result<()> {

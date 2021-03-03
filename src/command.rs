@@ -19,15 +19,19 @@ export PATH=$PATH:/usr/local/go/bin
 export PATH="$HOME/.cargo/bin:$PATH"
 "#,
             cmd,
-        ).as_bytes(),
+        )
+        .as_bytes(),
     )?;
 
-    let output = sandbox.execute(&ExecuteConfig {
-        meta: Some("meta.txt".to_string()),
-        time: Some(time_limit.try_into()?),
-        wall_time: Some(time_limit.try_into()?),
-        ..Default::default()
-    }, vec!["/bin/bash".to_string(), "exec_cmd.sh".to_string()])?;
+    let output = sandbox.execute(
+        &ExecuteConfig {
+            meta: Some("meta.txt".to_string()),
+            time: Some(time_limit.try_into()?),
+            wall_time: Some(time_limit.try_into()?),
+            ..Default::default()
+        },
+        vec!["/bin/bash".to_string(), "exec_cmd.sh".to_string()],
+    )?;
 
     let meta: Meta = std::fs::read_to_string(&meta_path)?.parse()?;
     // TODO handle non-UTF8 input
@@ -38,7 +42,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
         time: meta.time.unwrap_or(0.0).floor() as i32,
         stdout_size: message.len(),
         message: message,
-        mem_usage: meta.cg_mem.unwrap_or(0) as i32 // in bytes
+        mem_usage: meta.cg_mem.unwrap_or(0) as i32,
     })
 }
 
