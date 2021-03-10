@@ -151,6 +151,6 @@ mod tests {
             .unwrap();
 
         let meta = std::fs::read_to_string(&meta_path).unwrap();
-        assert!(meta.find("status:TO").is_some());
+        assert!(meta.contains("status:TO"));
     }
 }
