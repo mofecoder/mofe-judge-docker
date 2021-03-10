@@ -11,8 +11,8 @@ use std::process::Command;
 type SandboxId = u32;
 
 pub struct Sandbox {
-    pub path: PathBuf,
     pub id: SandboxId,
+    pub path: PathBuf,
 }
 
 impl Sandbox {
@@ -35,7 +35,7 @@ impl Sandbox {
         let ok = Command::new("isolate")
             .args(&["--cg", "--cleanup", &format!("--box-id={}", id)])
             .status()
-            .and_then(|result| Ok(result.success()))
+            .map(|result| result.success())
             .map_err(anyhow::Error::from)?;
 
         if ok {
@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn test_bash_script() {
         let sandbox = Sandbox::create(0u32).unwrap();
-        let path = sandbox.path.clone().join("test.sh");
+        let path = sandbox.path.join("test.sh");
         std::fs::write(path, "#!/bin/sh\necho test_bash_script\n").unwrap();
         let output = sandbox
             .execute(
@@ -133,8 +133,8 @@ mod tests {
     #[test]
     fn test_bash_script_timeout() {
         let sandbox = Sandbox::create(0u32).unwrap();
-        let meta_path = sandbox.path.clone().join("meta.txt");
-        let script_path = sandbox.path.clone().join("test.sh");
+        let meta_path = sandbox.path.join("meta.txt");
+        let script_path = sandbox.path.join("test.sh");
 
         std::fs::write(&script_path, "#!/bin/sh\nsleep 5\necho test_bash_script\n").unwrap();
         let _output = sandbox

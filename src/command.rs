@@ -34,14 +34,13 @@ export PATH="$HOME/.cargo/bin:$PATH"
     )?;
 
     let meta: Meta = std::fs::read_to_string(&meta_path)?.parse()?;
-    // TODO handle non-UTF8 input
     let message = String::from_utf8_lossy(&output.stdout).to_string();
 
     Ok(CmdResult {
         ok: meta.exitcode == Some(0),
         time: meta.time.unwrap_or(0.0).floor() as i32,
         stdout_size: message.len(),
-        message: message,
+        message,
         mem_usage: meta.cg_mem.unwrap_or(0) as i32,
     })
 }

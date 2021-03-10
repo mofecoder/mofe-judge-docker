@@ -23,7 +23,7 @@ impl FromStr for Meta {
         let mut meta: Meta = Default::default();
 
         for line in value.lines() {
-            if let Some(pos) = line.find(":") {
+            if let Some(pos) = line.find(':') {
                 let line_key = &line[0..pos];
                 let line_value = &line[pos + 1..];
 

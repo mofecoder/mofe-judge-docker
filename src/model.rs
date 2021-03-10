@@ -40,7 +40,6 @@ pub struct TestcaseTestcaseSets {
     pub testcase_set_id: i64,
 }
 
-
 #[derive(Deserialize, Serialize)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Status {
