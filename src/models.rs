@@ -16,13 +16,13 @@ pub struct CmdResult {
     pub message: String,    // コンパイルメッセージ
 }
 
-#[derive(Deserialize, FromRow)]
+#[derive(Serialize, Deserialize, FromRow)]
 pub struct Problem {
     pub problem_id: i64,
     pub uuid: String,
 }
 
-#[derive(Deserialize, FromRow)]
+#[derive(Serialize, Deserialize, FromRow)]
 pub struct Testcase {
     pub testcase_id: i64,
     pub name: String,
@@ -40,23 +40,23 @@ pub struct TestcaseTestcaseSets {
     pub testcase_set_id: i64,
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CompileRequest {
     pub submit_id: i64,
     pub cmd: String, // コンパイルコマンド or 実行コマンド
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct CompileResponse(pub CmdResult);
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DownloadRequest {
     pub submit_id: i64,
     pub code_path: String, // gcp 上のパス
     pub filename: String,  // Main.ext
 }
 
-#[derive(Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct JudgeRequest {
     pub submit_id: i64,
     pub cmd: String,     // コンパイルコマンド or 実行コマンド
@@ -67,7 +67,7 @@ pub struct JudgeRequest {
     pub problem: Problem,         // pub problem: Problem,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct JudgeResponse(pub Vec<TestcaseResult>);
 
 #[derive(Deserialize, Serialize)]
