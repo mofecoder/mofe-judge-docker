@@ -1,24 +1,12 @@
 use super::ApiResponse;
-use crate::{command::*, db, gcp, model::*, CONFIG, MAX_FILE_SIZE, MAX_MEMORY_USAGE};
+use crate::{command::*, db, gcp, models::*, CONFIG, MAX_FILE_SIZE, MAX_MEMORY_USAGE};
 use anyhow::Result;
 use chrono::prelude::*;
 use rocket_contrib::{json, json::Json};
-use serde::Deserialize;
 use std::{fs, fs::File, io::Write};
 
-#[derive(Deserialize)]
-pub struct RequestJson {
-    pub submit_id: i64,
-    pub cmd: String,     // コンパイルコマンド or 実行コマンド
-    pub time_limit: i32, // 実行制限時間
-    pub mem_limit: i32,  // メモリ制限
-
-    pub testcases: Vec<Testcase>, // pub testcase: Testcase,
-    pub problem: Problem,         // pub problem: Problem,
-}
-
 #[post("/judge", format = "application/json", data = "<req>")]
-pub async fn judge(req: Json<RequestJson>) -> ApiResponse {
+pub async fn judge(req: Json<JudgeRequest>) -> ApiResponse {
     let testcase_results = match try_testcases(&req.0).await {
         Ok(testcase_results) => testcase_results,
         Err(e) => return ApiResponse::internal_server_error(e),
@@ -29,7 +17,7 @@ pub async fn judge(req: Json<RequestJson>) -> ApiResponse {
     ApiResponse::ok(json!(testcase_results))
 }
 
-async fn try_testcases(req: &RequestJson) -> Result<Vec<TestcaseResult>> {
+async fn try_testcases(req: &JudgeRequest) -> Result<Vec<TestcaseResult>> {
     let mut testcase_results = Vec::new();
 
     for testcase in &req.testcases {

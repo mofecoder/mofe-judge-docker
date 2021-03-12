@@ -40,6 +40,30 @@ pub struct TestcaseTestcaseSets {
     pub testcase_set_id: i64,
 }
 
+#[derive(Deserialize)]
+pub struct CompileRequest {
+    pub submit_id: i64,
+    pub cmd: String, // コンパイルコマンド or 実行コマンド
+}
+
+#[derive(Deserialize)]
+pub struct DownloadRequest {
+    pub submit_id: i64,
+    pub code_path: String, // gcp 上のパス
+    pub filename: String,  // Main.ext
+}
+
+#[derive(Deserialize)]
+pub struct JudgeRequest {
+    pub submit_id: i64,
+    pub cmd: String,     // コンパイルコマンド or 実行コマンド
+    pub time_limit: i32, // 実行制限時間
+    pub mem_limit: i32,  // メモリ制限
+
+    pub testcases: Vec<Testcase>, // pub testcase: Testcase,
+    pub problem: Problem,         // pub problem: Problem,
+}
+
 #[derive(Deserialize, Serialize)]
 #[allow(clippy::upper_case_acronyms)]
 pub enum Status {

@@ -5,7 +5,7 @@ mod command;
 mod config;
 mod db;
 mod gcp;
-mod model;
+mod models;
 mod sandbox;
 
 #[macro_use]
