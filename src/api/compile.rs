@@ -1,5 +1,8 @@
 use super::ApiResponse;
-use crate::{command::exec_cmd, models::CompileRequest};
+use crate::{
+    command::exec_cmd,
+    models::{CompileRequest, CompileResponse},
+};
 use rocket_contrib::{json, json::Json};
 
 #[post("/compile", format = "application/json", data = "<req>")]
@@ -9,5 +12,7 @@ async fn compile(req: Json<CompileRequest>) -> ApiResponse {
         Err(e) => return ApiResponse::internal_server_error(e),
     };
 
-    ApiResponse::ok(json! {cmd_res})
+    let resp = CompileResponse(cmd_res);
+
+    ApiResponse::ok(json!(resp))
 }

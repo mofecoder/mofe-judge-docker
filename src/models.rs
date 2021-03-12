@@ -46,6 +46,9 @@ pub struct CompileRequest {
     pub cmd: String, // コンパイルコマンド or 実行コマンド
 }
 
+#[derive(Serialize)]
+pub struct CompileResponse(pub CmdResult);
+
 #[derive(Deserialize)]
 pub struct DownloadRequest {
     pub submit_id: i64,
@@ -63,6 +66,9 @@ pub struct JudgeRequest {
     pub testcases: Vec<Testcase>, // pub testcase: Testcase,
     pub problem: Problem,         // pub problem: Problem,
 }
+
+#[derive(Serialize)]
+pub struct JudgeResponse(pub Vec<TestcaseResult>);
 
 #[derive(Deserialize, Serialize)]
 #[allow(clippy::upper_case_acronyms)]

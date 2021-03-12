@@ -14,7 +14,9 @@ pub async fn judge(req: Json<JudgeRequest>) -> ApiResponse {
 
     // todo: scoring, send_result
 
-    ApiResponse::ok(json!(testcase_results))
+    let resp = JudgeResponse(testcase_results);
+
+    ApiResponse::ok(json!(resp))
 }
 
 async fn try_testcases(req: &JudgeRequest) -> Result<Vec<TestcaseResult>> {
