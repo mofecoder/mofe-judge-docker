@@ -1,4 +1,4 @@
-#![allow(clippy::unknown_clippy_lints)]
+#![allow(renamed_and_removed_lints)]
 
 mod api;
 mod command;
