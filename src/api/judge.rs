@@ -75,7 +75,7 @@ async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
     Ok(submit_result)
 }
 
-/// Update judeg result based on testcase results. Returns `true` if any fields are updated.
+/// Update judge result based on testcase results. Returns `true` if any fields are updated.
 fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
     let mut updated = false;
 
