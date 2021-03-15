@@ -19,6 +19,7 @@ use once_cell::sync::Lazy;
 static CONFIG: Lazy<Config> = Lazy::new(|| config::load_config().unwrap());
 
 const MAX_FILE_SIZE: usize = 200_000_000; // 200MB
+#[allow(dead_code)]
 const MAX_MEMORY_USAGE: i32 = 1_024_000; // 1024MB
 
 #[rocket::main]
