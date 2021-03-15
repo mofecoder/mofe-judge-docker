@@ -9,7 +9,7 @@ use std::{
 };
 
 pub async fn scoring(
-    db_conn: Arc<DbPool>,
+    conn: Arc<DbPool>,
     req: &JudgeRequest,
     submit_result: &JudgeResponse,
 ) -> Result<i64> {
@@ -17,7 +17,7 @@ pub async fn scoring(
         return Ok(0);
     }
 
-    let db_conn = Arc::as_ref(&db_conn);
+    let conn = Arc::as_ref(&conn);
     let testcase_sets: Vec<TestcaseSets> = sqlx::query_as(
         r#"
     SELECT id, points FROM testcase_sets
@@ -25,7 +25,7 @@ pub async fn scoring(
     "#,
     )
     .bind(req.problem.problem_id)
-    .fetch_all(db_conn)
+    .fetch_all(conn)
     .await?;
 
     let testcase_testcase_sets: Vec<TestcaseTestcaseSets> = sqlx::query_as(
@@ -36,7 +36,7 @@ pub async fn scoring(
     "#,
     )
     .bind(req.problem.problem_id)
-    .fetch_all(db_conn)
+    .fetch_all(conn)
     .await?;
 
     let mut testcase_set_map: HashMap<i64, Vec<i64>> = HashMap::new();

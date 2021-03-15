@@ -15,6 +15,7 @@ use anyhow::Result;
 use api::judge::judge;
 use config::Config;
 use once_cell::sync::Lazy;
+use std::sync::Arc;
 
 static CONFIG: Lazy<Config> = Lazy::new(|| config::load_config().unwrap());
 
@@ -24,7 +25,16 @@ const MAX_MEMORY_USAGE: i32 = 1_024_000; // 1024MB
 
 #[rocket::main]
 async fn main() -> Result<()> {
-    rocket::ignite().mount("/", routes![judge]).launch().await?;
+    let conn = {
+        let pool = db::new_pool(&CONFIG).await?;
+        Arc::new(pool)
+    };
+
+    rocket::ignite()
+        .manage(conn)
+        .mount("/", routes![judge])
+        .launch()
+        .await?;
 
     Ok(())
 }

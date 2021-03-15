@@ -2,8 +2,8 @@ use crate::{db::DbPool, models::JudgeResponse};
 use anyhow::Result;
 use std::sync::Arc;
 
-pub async fn send_result(db_conn: Arc<DbPool>, submit_result: &JudgeResponse) -> Result<()> {
-    let db_conn = Arc::as_ref(&db_conn);
+pub async fn send_result(conn: Arc<DbPool>, submit_result: &JudgeResponse) -> Result<()> {
+    let conn = Arc::as_ref(&conn);
 
     sqlx::query(
         r#"
@@ -21,7 +21,7 @@ pub async fn send_result(db_conn: Arc<DbPool>, submit_result: &JudgeResponse) ->
     .bind(submit_result.execution_memory)
     .bind(submit_result.score)
     .bind(submit_result.submit_id)
-    .execute(db_conn)
+    .execute(conn)
     .await?;
 
     Ok(())

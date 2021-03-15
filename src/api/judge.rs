@@ -2,39 +2,37 @@ mod scoring;
 mod sender;
 
 use super::ApiResponse;
-use crate::{command::*, db, gcp, models::*, CONFIG, MAX_FILE_SIZE, MAX_MEMORY_USAGE};
+use crate::{MAX_FILE_SIZE, command::*, db::DbPool, gcp, models::*};
 use anyhow::Result;
 use chrono::prelude::*;
+use rocket::State;
 use rocket_contrib::{json, json::Json};
 use scoring::scoring;
 use sender::send_result;
 use std::{collections::HashMap, fs, fs::File, io::Write, sync::Arc};
 
 #[post("/judge", format = "application/json", data = "<req>")]
-pub async fn judge(req: Json<JudgeRequest>) -> ApiResponse {
-    let mut submit_result = match try_testcases(&req.0).await {
+pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {    
+    let conn = Arc::clone(&conn);
+
+    let mut submit_result = match try_testcases(&req.0, conn.clone()).await {
         Ok(submit_result) => submit_result,
         Err(e) => return ApiResponse::internal_server_error(e),
     };
 
-    let db_conn = match db::new_pool(&CONFIG).await {
-        Ok(db_conn) => Arc::new(db_conn),
-        Err(e) => return ApiResponse::internal_server_error(e),
-    };
-
-    submit_result.score = match scoring(db_conn.clone(), &req, &submit_result).await {
+    submit_result.score = match scoring(conn.clone(), &req, &submit_result).await {
         Ok(score) => score,
         Err(e) => return ApiResponse::internal_server_error(e),
     };
 
-    if let Err(e) = send_result(db_conn.clone(), &submit_result).await {
+    if let Err(e) = send_result(conn.clone(), &submit_result).await {
         return ApiResponse::internal_server_error(e);
     }
 
     ApiResponse::ok(json!(submit_result))
 }
 
-async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
+async fn try_testcases(req: &JudgeRequest, conn: Arc<DbPool>) -> Result<JudgeResponse> {
     let mut submit_result = JudgeResponse {
         submit_id: req.submit_id,
         status: Status::AC,
@@ -46,6 +44,7 @@ async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
     let mut testcase_result_map = HashMap::new();
 
     for testcase in &req.testcases {
+        let conn = Arc::clone(&conn);
         let testcase_data = gcp::download_testcase(&req.problem.uuid, &testcase.name).await?;
 
         let mut file = File::create("testcase.txt")?;
@@ -66,7 +65,7 @@ async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
 
         update_result(&mut submit_result, &testcase_result);
 
-        insert_testcase_result(req.submit_id, testcase.testcase_id, &testcase_result).await?;
+        insert_testcase_result(conn, req.submit_id, testcase.testcase_id, &testcase_result).await?;
         testcase_result_map.insert(testcase.testcase_id, testcase_result);
     }
 
@@ -128,11 +127,12 @@ fn judging(
 }
 
 async fn insert_testcase_result(
+    conn: Arc<DbPool>,
     submit_id: i64,
     testcase_id: i64,
     testcase_result: &TestcaseResult,
 ) -> Result<()> {
-    let conn = db::new_pool(&CONFIG).await?;
+    let conn = Arc::as_ref(&conn);
 
     sqlx::query(
         r#"
@@ -146,7 +146,7 @@ async fn insert_testcase_result(
     .bind(testcase_result.cmd_result.execution_time)
     .bind(testcase_result.cmd_result.execution_memory)
     .bind(Local::now().naive_local())
-    .execute(&conn)
+    .execute(conn)
     .await?;
 
     Ok(())
