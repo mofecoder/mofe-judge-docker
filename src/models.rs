@@ -71,7 +71,6 @@ pub struct JudgeRequest {
 pub struct JudgeResponse(pub Vec<TestcaseResult>);
 
 #[derive(Deserialize, Serialize)]
-#[allow(clippy::upper_case_acronyms)]
 pub enum Status {
     AC,
     TLE,
