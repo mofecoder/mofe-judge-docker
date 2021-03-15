@@ -57,6 +57,7 @@ async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
         let status = judging(
             &cmd_result,
             req.time_limit,
+            req.mem_limit,
             &String::from_utf8(user_output)?,
             &String::from_utf8(testcase_data.0)?,
         )?;
@@ -100,6 +101,7 @@ fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseRe
 fn judging(
     cmd_result: &CmdResult,
     time_limit: i32,
+    mem_limit: i32,
     user_output: &str,
     testcase_output: &str,
 ) -> Result<Status> {
@@ -109,15 +111,20 @@ fn judging(
     if cmd_result.execution_time > time_limit {
         return Ok(Status::TLE);
     }
-    // TODO: checker に user_output と testcase_output を渡す
+    // TODO Sandbox に output limit を渡す
     if cmd_result.stdout_size > MAX_FILE_SIZE {
         return Ok(Status::OLE);
     }
-    if cmd_result.execution_memory > MAX_MEMORY_USAGE {
+    if cmd_result.execution_memory > mem_limit {
         return Ok(Status::MLE);
     }
 
-    Ok(Status::AC)
+    // TODO: checker に user_output と testcase_output を渡す
+    if user_output.trim() == testcase_output.trim() {
+        Ok(Status::AC)
+    } else {
+        Ok(Status::WA)
+    }
 }
 
 async fn insert_testcase_result(
