@@ -38,10 +38,10 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
     Ok(CmdResult {
         ok: meta.exitcode == Some(0),
-        time: meta.time.unwrap_or(0.0).floor() as i32,
+        execution_time: meta.time.unwrap_or(0.0).floor() as i32,
         stdout_size: message.len(),
         message,
-        mem_usage: meta.cg_mem.unwrap_or(0) as i32,
+        execution_memory: meta.cg_mem.unwrap_or(0) as i32,
     })
 }
 

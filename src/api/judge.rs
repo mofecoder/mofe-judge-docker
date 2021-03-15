@@ -1,26 +1,49 @@
+mod scoring;
+mod sender;
+
 use super::ApiResponse;
 use crate::{command::*, db, gcp, models::*, CONFIG, MAX_FILE_SIZE, MAX_MEMORY_USAGE};
 use anyhow::Result;
 use chrono::prelude::*;
 use rocket_contrib::{json, json::Json};
-use std::{fs, fs::File, io::Write};
+use scoring::scoring;
+use sender::send_result;
+use std::{collections::HashMap, fs, fs::File, io::Write, sync::Arc};
 
 #[post("/judge", format = "application/json", data = "<req>")]
 pub async fn judge(req: Json<JudgeRequest>) -> ApiResponse {
-    let testcase_results = match try_testcases(&req.0).await {
-        Ok(testcase_results) => testcase_results,
+    let mut submit_result = match try_testcases(&req.0).await {
+        Ok(submit_result) => submit_result,
         Err(e) => return ApiResponse::internal_server_error(e),
     };
 
-    // todo: scoring, send_result
+    let db_conn = match db::new_pool(&CONFIG).await {
+        Ok(db_conn) => Arc::new(db_conn),
+        Err(e) => return ApiResponse::internal_server_error(e),
+    };
 
-    let resp = JudgeResponse(testcase_results);
+    submit_result.score = match scoring(db_conn.clone(), &req, &submit_result).await {
+        Ok(score) => score,
+        Err(e) => return ApiResponse::internal_server_error(e),
+    };
 
-    ApiResponse::ok(json!(resp))
+    if let Err(e) = send_result(db_conn.clone(), &submit_result).await {
+        return ApiResponse::internal_server_error(e);
+    }
+
+    ApiResponse::ok(json!(submit_result))
 }
 
-async fn try_testcases(req: &JudgeRequest) -> Result<Vec<TestcaseResult>> {
-    let mut testcase_results = Vec::new();
+async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
+    let mut submit_result = JudgeResponse {
+        submit_id: req.submit_id,
+        status: Status::AC,
+        execution_time: 0,
+        execution_memory: 0,
+        score: 0,
+        testcase_result_map: HashMap::new(),
+    };
+    let mut testcase_result_map = HashMap::new();
 
     for testcase in &req.testcases {
         let testcase_data = gcp::download_testcase(&req.problem.uuid, &testcase.name).await?;
@@ -40,11 +63,37 @@ async fn try_testcases(req: &JudgeRequest) -> Result<Vec<TestcaseResult>> {
 
         let testcase_result = TestcaseResult { status, cmd_result };
 
+        let _ = cmp_results(&mut submit_result, &testcase_result);
+
         insert_testcase_result(req.submit_id, testcase.testcase_id, &testcase_result).await?;
-        testcase_results.push(testcase_result);
+        testcase_result_map.insert(testcase.testcase_id, testcase_result);
     }
 
-    Ok(testcase_results)
+    submit_result.testcase_result_map = testcase_result_map;
+
+    Ok(submit_result)
+}
+
+// if there are some change, return true.
+fn cmp_results(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
+    let mut flg = false;
+
+    if submit_result.status.to_priority() < testcase_result.status.to_priority() {
+        submit_result.status = testcase_result.status.clone();
+        flg = true;
+    }
+
+    if submit_result.execution_memory < testcase_result.cmd_result.execution_memory {
+        submit_result.execution_memory = testcase_result.cmd_result.execution_memory;
+        flg = true;
+    }
+
+    if submit_result.execution_time < testcase_result.cmd_result.execution_time {
+        submit_result.execution_time = testcase_result.cmd_result.execution_time;
+        flg = true;
+    }
+
+    flg
 }
 
 #[allow(clippy::clippy::unnecessary_wraps, unused_variables)]
@@ -57,14 +106,14 @@ fn judging(
     if !cmd_result.ok {
         return Ok(Status::RE);
     }
-    if cmd_result.time > time_limit {
+    if cmd_result.execution_time > time_limit {
         return Ok(Status::TLE);
     }
     // todo: checker に user_output と testcase_output を渡す
     if cmd_result.stdout_size > MAX_FILE_SIZE {
         return Ok(Status::OLE);
     }
-    if cmd_result.mem_usage > MAX_MEMORY_USAGE {
+    if cmd_result.execution_memory > MAX_MEMORY_USAGE {
         return Ok(Status::MLE);
     }
 
@@ -86,9 +135,9 @@ async fn insert_testcase_result(
     )
     .bind(submit_id)
     .bind(testcase_id)
-    .bind(testcase_result.status.value())
-    .bind(testcase_result.cmd_result.time)
-    .bind(testcase_result.cmd_result.mem_usage)
+    .bind(testcase_result.status.to_string())
+    .bind(testcase_result.cmd_result.execution_time)
+    .bind(testcase_result.cmd_result.execution_memory)
     .bind(Local::now().naive_local())
     .execute(&conn)
     .await?;
