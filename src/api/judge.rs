@@ -109,7 +109,7 @@ fn judging(
     if cmd_result.execution_time > time_limit {
         return Ok(Status::TLE);
     }
-    // todo: checker に user_output と testcase_output を渡す
+    // TODO: checker に user_output と testcase_output を渡す
     if cmd_result.stdout_size > MAX_FILE_SIZE {
         return Ok(Status::OLE);
     }
