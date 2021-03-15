@@ -78,7 +78,7 @@ pub struct JudgeResponse {
     pub testcase_result_map: HashMap<i64, TestcaseResult>,
 }
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, PartialEq)]
 pub enum Status {
     AC,
     TLE,
@@ -93,23 +93,17 @@ pub enum Status {
 impl fmt::Display for Status {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = match *self {
-            Status::AC => "AC".to_string(),
-            Status::TLE => "TLE".to_string(),
-            Status::MLE => "MLE".to_string(),
-            Status::OLE => "OLE".to_string(),
-            Status::WA => "WA".to_string(),
-            Status::RE => "RE".to_string(),
-            Status::CE => "CE".to_string(),
-            Status::IE => "IE".to_string(),
+            Status::AC => "AC",
+            Status::TLE => "TLE",
+            Status::MLE => "MLE",
+            Status::OLE => "OLE",
+            Status::WA => "WA",
+            Status::RE => "RE",
+            Status::CE => "CE",
+            Status::IE => "IE",
         };
 
         write!(f, "{}", s)
-    }
-}
-
-impl PartialEq for Status {
-    fn eq(&self, other: &Self) -> bool {
-        self.to_priority() == other.to_priority()
     }
 }
 
