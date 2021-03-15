@@ -78,7 +78,7 @@ pub struct JudgeResponse {
     pub testcase_result_map: HashMap<i64, TestcaseResult>,
 }
 
-#[derive(Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Deserialize, Serialize, Clone, Copy, PartialEq)]
 pub enum Status {
     AC,
     TLE,

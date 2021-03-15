@@ -63,7 +63,7 @@ async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
 
         let testcase_result = TestcaseResult { status, cmd_result };
 
-        let _ = cmp_results(&mut submit_result, &testcase_result);
+        update_result(&mut submit_result, &testcase_result);
 
         insert_testcase_result(req.submit_id, testcase.testcase_id, &testcase_result).await?;
         testcase_result_map.insert(testcase.testcase_id, testcase_result);
@@ -74,26 +74,26 @@ async fn try_testcases(req: &JudgeRequest) -> Result<JudgeResponse> {
     Ok(submit_result)
 }
 
-// if there are some change, return true.
-fn cmp_results(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
-    let mut flg = false;
+/// Update judeg result based on testcase results. Returns `true` if any fields are updated.
+fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
+    let mut updated = false;
 
     if submit_result.status.to_priority() < testcase_result.status.to_priority() {
-        submit_result.status = testcase_result.status.clone();
-        flg = true;
+        submit_result.status = testcase_result.status;
+        updated = true;
     }
 
     if submit_result.execution_memory < testcase_result.cmd_result.execution_memory {
         submit_result.execution_memory = testcase_result.cmd_result.execution_memory;
-        flg = true;
+        updated = true;
     }
 
     if submit_result.execution_time < testcase_result.cmd_result.execution_time {
         submit_result.execution_time = testcase_result.cmd_result.execution_time;
-        flg = true;
+        updated = true;
     }
 
-    flg
+    updated
 }
 
 #[allow(clippy::clippy::unnecessary_wraps, unused_variables)]
