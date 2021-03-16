@@ -1,28 +1,50 @@
+mod scoring;
+mod sender;
+
 use super::ApiResponse;
-use crate::{command::*, db, gcp, models::*, CONFIG, MAX_FILE_SIZE, MAX_MEMORY_USAGE};
+use crate::{MAX_FILE_SIZE, command::*, db::DbPool, gcp, models::*};
 use anyhow::Result;
 use chrono::prelude::*;
+use rocket::State;
 use rocket_contrib::{json, json::Json};
-use std::{fs, fs::File, io::Write};
+use scoring::scoring;
+use sender::send_result;
+use std::{collections::HashMap, fs, fs::File, io::Write, sync::Arc};
 
 #[post("/judge", format = "application/json", data = "<req>")]
-pub async fn judge(req: Json<JudgeRequest>) -> ApiResponse {
-    let testcase_results = match try_testcases(&req.0).await {
-        Ok(testcase_results) => testcase_results,
+pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {    
+    let conn = Arc::clone(&conn);
+
+    let mut submit_result = match try_testcases(&req.0, conn.clone()).await {
+        Ok(submit_result) => submit_result,
         Err(e) => return ApiResponse::internal_server_error(e),
     };
 
-    // todo: scoring, send_result
+    submit_result.score = match scoring(conn.clone(), &req, &submit_result).await {
+        Ok(score) => score,
+        Err(e) => return ApiResponse::internal_server_error(e),
+    };
 
-    let resp = JudgeResponse(testcase_results);
+    if let Err(e) = send_result(conn.clone(), &submit_result).await {
+        return ApiResponse::internal_server_error(e);
+    }
 
-    ApiResponse::ok(json!(resp))
+    ApiResponse::ok(json!(submit_result))
 }
 
-async fn try_testcases(req: &JudgeRequest) -> Result<Vec<TestcaseResult>> {
-    let mut testcase_results = Vec::new();
+async fn try_testcases(req: &JudgeRequest, conn: Arc<DbPool>) -> Result<JudgeResponse> {
+    let mut submit_result = JudgeResponse {
+        submit_id: req.submit_id,
+        status: Status::AC,
+        execution_time: 0,
+        execution_memory: 0,
+        score: 0,
+        testcase_result_map: HashMap::new(),
+    };
+    let mut testcase_result_map = HashMap::new();
 
     for testcase in &req.testcases {
+        let conn = Arc::clone(&conn);
         let testcase_data = gcp::download_testcase(&req.problem.uuid, &testcase.name).await?;
 
         let mut file = File::create("testcase.txt")?;
@@ -34,49 +56,83 @@ async fn try_testcases(req: &JudgeRequest) -> Result<Vec<TestcaseResult>> {
         let status = judging(
             &cmd_result,
             req.time_limit,
+            req.mem_limit,
             &String::from_utf8(user_output)?,
             &String::from_utf8(testcase_data.0)?,
         )?;
 
         let testcase_result = TestcaseResult { status, cmd_result };
 
-        insert_testcase_result(req.submit_id, testcase.testcase_id, &testcase_result).await?;
-        testcase_results.push(testcase_result);
+        update_result(&mut submit_result, &testcase_result);
+
+        insert_testcase_result(conn, req.submit_id, testcase.testcase_id, &testcase_result).await?;
+        testcase_result_map.insert(testcase.testcase_id, testcase_result);
     }
 
-    Ok(testcase_results)
+    submit_result.testcase_result_map = testcase_result_map;
+
+    Ok(submit_result)
+}
+
+/// Update judge result based on testcase results. Returns `true` if any fields are updated.
+fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
+    let mut updated = false;
+
+    if submit_result.status.to_priority() < testcase_result.status.to_priority() {
+        submit_result.status = testcase_result.status;
+        updated = true;
+    }
+
+    if submit_result.execution_memory < testcase_result.cmd_result.execution_memory {
+        submit_result.execution_memory = testcase_result.cmd_result.execution_memory;
+        updated = true;
+    }
+
+    if submit_result.execution_time < testcase_result.cmd_result.execution_time {
+        submit_result.execution_time = testcase_result.cmd_result.execution_time;
+        updated = true;
+    }
+
+    updated
 }
 
 #[allow(clippy::clippy::unnecessary_wraps, unused_variables)]
 fn judging(
     cmd_result: &CmdResult,
     time_limit: i32,
+    mem_limit: i32,
     user_output: &str,
     testcase_output: &str,
 ) -> Result<Status> {
     if !cmd_result.ok {
         return Ok(Status::RE);
     }
-    if cmd_result.time > time_limit {
+    if cmd_result.execution_time > time_limit {
         return Ok(Status::TLE);
     }
-    // todo: checker に user_output と testcase_output を渡す
+    // TODO Sandbox に output limit を渡す
     if cmd_result.stdout_size > MAX_FILE_SIZE {
         return Ok(Status::OLE);
     }
-    if cmd_result.mem_usage > MAX_MEMORY_USAGE {
+    if cmd_result.execution_memory > mem_limit {
         return Ok(Status::MLE);
     }
 
-    Ok(Status::AC)
+    // TODO: checker に user_output と testcase_output を渡す
+    if user_output.trim() == testcase_output.trim() {
+        Ok(Status::AC)
+    } else {
+        Ok(Status::WA)
+    }
 }
 
 async fn insert_testcase_result(
+    conn: Arc<DbPool>,
     submit_id: i64,
     testcase_id: i64,
     testcase_result: &TestcaseResult,
 ) -> Result<()> {
-    let conn = db::new_pool(&CONFIG).await?;
+    let conn = Arc::as_ref(&conn);
 
     sqlx::query(
         r#"
@@ -86,11 +142,11 @@ async fn insert_testcase_result(
     )
     .bind(submit_id)
     .bind(testcase_id)
-    .bind(testcase_result.status.value())
-    .bind(testcase_result.cmd_result.time)
-    .bind(testcase_result.cmd_result.mem_usage)
+    .bind(testcase_result.status.to_string())
+    .bind(testcase_result.cmd_result.execution_time)
+    .bind(testcase_result.cmd_result.execution_memory)
     .bind(Local::now().naive_local())
-    .execute(&conn)
+    .execute(conn)
     .await?;
 
     Ok(())

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
+use std::{collections::HashMap, fmt};
 
 #[derive(Deserialize, Serialize)]
 pub struct TestcaseResult {
@@ -9,11 +10,11 @@ pub struct TestcaseResult {
 
 #[derive(Deserialize, Serialize)]
 pub struct CmdResult {
-    pub time: i32,          // ms
-    pub stdout_size: usize, // byte
-    pub mem_usage: i32,     // byte
-    pub ok: bool,           // exit_code == 0
-    pub message: String,    // コンパイルメッセージ
+    pub execution_time: i32,   // ms
+    pub stdout_size: usize,    // byte
+    pub execution_memory: i32, // KB
+    pub ok: bool,              // exit_code == 0
+    pub message: String,       // コンパイルメッセージ
 }
 
 #[derive(Serialize, Deserialize, FromRow)]
@@ -28,13 +29,13 @@ pub struct Testcase {
     pub name: String,
 }
 
-#[allow(dead_code)]
+#[derive(sqlx::FromRow)]
 pub struct TestcaseSets {
     pub id: i64,
     pub points: u64,
 }
 
-#[allow(dead_code)]
+#[derive(sqlx::FromRow)]
 pub struct TestcaseTestcaseSets {
     pub testcase_id: i64,
     pub testcase_set_id: i64,
@@ -68,9 +69,16 @@ pub struct JudgeRequest {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct JudgeResponse(pub Vec<TestcaseResult>);
+pub struct JudgeResponse {
+    pub submit_id: i64,
+    pub status: Status,
+    pub score: i64,
+    pub execution_time: i32,
+    pub execution_memory: i32,
+    pub testcase_result_map: HashMap<i64, TestcaseResult>,
+}
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone, Copy, PartialEq)]
 pub enum Status {
     AC,
     TLE,
@@ -82,17 +90,34 @@ pub enum Status {
     IE,
 }
 
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = match *self {
+            Status::AC => "AC",
+            Status::TLE => "TLE",
+            Status::MLE => "MLE",
+            Status::OLE => "OLE",
+            Status::WA => "WA",
+            Status::RE => "RE",
+            Status::CE => "CE",
+            Status::IE => "IE",
+        };
+
+        write!(f, "{}", s)
+    }
+}
+
 impl Status {
-    pub fn value(&self) -> String {
+    pub fn to_priority(&self) -> i32 {
         match *self {
-            Status::AC => "AC".to_string(),
-            Status::TLE => "TLE".to_string(),
-            Status::MLE => "MLE".to_string(),
-            Status::OLE => "OLE".to_string(),
-            Status::WA => "WA".to_string(),
-            Status::RE => "RE".to_string(),
-            Status::CE => "CE".to_string(),
-            Status::IE => "IE".to_string(),
+            Status::AC => 1,
+            Status::TLE => 2,
+            Status::MLE => 3,
+            Status::OLE => 4,
+            Status::WA => 5,
+            Status::RE => 6,
+            Status::CE => 7,
+            Status::IE => 8,
         }
     }
 }
