@@ -2,7 +2,7 @@ mod scoring;
 mod sender;
 
 use super::ApiResponse;
-use crate::{checker::run_checker, command::*, db::DbPool, gcp, models::*, MAX_FILE_SIZE};
+use crate::{checker::{compile_checker, run_checker}, command::*, db::DbPool, gcp, models::*, MAX_FILE_SIZE};
 use anyhow::Result;
 use chrono::prelude::*;
 use rocket::State;
@@ -22,10 +22,17 @@ use std::{
 pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {
     let conn = Arc::clone(&conn);
 
-    // TODO download and compile checker
-    let checker_path: PathBuf = PathBuf::from("./checker");
+    // TODO download checker source and confirm testlib.h location and checker temporary location
+    let checker_source_path: PathBuf = PathBuf::from("./checker.cpp");
+    let checker_target_path: PathBuf = PathBuf::from("./temp_dir/checker.cpp");
+    let testlib_path: PathBuf = PathBuf::from("/testlib.h");
+    match compile_checker(&checker_source_path, &checker_target_path, &testlib_path) {
+        Ok(_) => (),
+        // TODO confirm error message (may not be internal server error)
+        Err(e) => return ApiResponse::internal_server_error(e),
+    };
 
-    let mut submit_result = match try_testcases(&req.0, conn.clone(), &checker_path).await {
+    let mut submit_result = match try_testcases(&req.0, conn.clone(), &checker_target_path).await {
         Ok(submit_result) => submit_result,
         Err(e) => return ApiResponse::internal_server_error(e),
     };
