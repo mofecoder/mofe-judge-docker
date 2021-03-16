@@ -2,20 +2,30 @@ mod scoring;
 mod sender;
 
 use super::ApiResponse;
-use crate::{MAX_FILE_SIZE, command::*, db::DbPool, gcp, models::*};
+use crate::{checker::run_checker, command::*, db::DbPool, gcp, models::*, MAX_FILE_SIZE};
 use anyhow::Result;
 use chrono::prelude::*;
 use rocket::State;
 use rocket_contrib::{json, json::Json};
 use scoring::scoring;
 use sender::send_result;
-use std::{collections::HashMap, fs, fs::File, io::Write, sync::Arc};
+use std::{
+    collections::HashMap,
+    fs,
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 #[post("/judge", format = "application/json", data = "<req>")]
-pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {    
+pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {
     let conn = Arc::clone(&conn);
 
-    let mut submit_result = match try_testcases(&req.0, conn.clone()).await {
+    // TODO download and compile checker
+    let checker_path: PathBuf = PathBuf::from("./checker");
+
+    let mut submit_result = match try_testcases(&req.0, conn.clone(), &checker_path).await {
         Ok(submit_result) => submit_result,
         Err(e) => return ApiResponse::internal_server_error(e),
     };
@@ -32,7 +42,11 @@ pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> Api
     ApiResponse::ok(json!(submit_result))
 }
 
-async fn try_testcases(req: &JudgeRequest, conn: Arc<DbPool>) -> Result<JudgeResponse> {
+async fn try_testcases(
+    req: &JudgeRequest,
+    conn: Arc<DbPool>,
+    checker_path: &Path,
+) -> Result<JudgeResponse> {
     let mut submit_result = JudgeResponse {
         submit_id: req.submit_id,
         status: Status::AC,
@@ -57,8 +71,10 @@ async fn try_testcases(req: &JudgeRequest, conn: Arc<DbPool>) -> Result<JudgeRes
             &cmd_result,
             req.time_limit,
             req.mem_limit,
-            &String::from_utf8(user_output)?,
             &String::from_utf8(testcase_data.0)?,
+            &String::from_utf8(user_output)?,
+            &String::from_utf8(testcase_data.1)?,
+            checker_path,
         )?;
 
         let testcase_result = TestcaseResult { status, cmd_result };
@@ -101,8 +117,10 @@ fn judging(
     cmd_result: &CmdResult,
     time_limit: i32,
     mem_limit: i32,
+    testcase_input: &str,
     user_output: &str,
     testcase_output: &str,
+    checker_path: &Path,
 ) -> Result<Status> {
     if !cmd_result.ok {
         return Ok(Status::RE);
@@ -118,12 +136,8 @@ fn judging(
         return Ok(Status::MLE);
     }
 
-    // TODO: checker に user_output と testcase_output を渡す
-    if user_output.trim() == testcase_output.trim() {
-        Ok(Status::AC)
-    } else {
-        Ok(Status::WA)
-    }
+    let result = run_checker(checker_path, testcase_input, user_output, testcase_output)?;
+    Ok(result)
 }
 
 async fn insert_testcase_result(

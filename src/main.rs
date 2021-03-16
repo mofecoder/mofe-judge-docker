@@ -1,6 +1,7 @@
 #![allow(renamed_and_removed_lints)]
 
 mod api;
+mod checker;
 mod command;
 mod config;
 mod db;
