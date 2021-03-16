@@ -9,7 +9,11 @@ use crate::{
 /// Compile the checker file at `checker_source`, and place the compiled file at `checker_target`.
 /// Pass the path of `testlib.h` as `testlib_path`.
 /// Only C++ is supported.
-pub fn compile_checker(checker_source: &Path, checker_target: &Path, testlib_path: &Path) -> Result<()> {
+pub fn compile_checker(
+    checker_source: &Path,
+    checker_target: &Path,
+    testlib_path: &Path,
+) -> Result<()> {
     let sandbox = Sandbox::create(0)?;
 
     let sandbox_checker_source = sandbox.path.join("checker.cpp");
@@ -107,18 +111,21 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-    fn test_compile_run_useless_checker_ac()  -> Result<()> {
+    fn test_compile_run_useless_checker_ac() -> Result<()> {
         let checker_source_path = PathBuf::from("/tmp/checker.cpp");
         let checker_target_path = PathBuf::from("/tmp/checker");
         let testlib_path = PathBuf::from("/tmp/testlib.h");
 
-        std::fs::write(&checker_source_path, r#"
-            #include <iostream>
-            int main() {
-                std::cout << "ok" << std::endl;
-                return 0;
-            }
-        "#)?;
+        std::fs::write(
+            &checker_source_path,
+            r#"
+                #include <iostream>
+                int main() {
+                    std::cout << "ok" << std::endl;
+                    return 0;
+                }
+            "#,
+        )?;
         // Touch testlib.h
         std::fs::write(&testlib_path, "")?;
 
@@ -131,18 +138,21 @@ mod tests {
     }
 
     #[test]
-    fn test_compile_run_useless_checker_wa()  -> Result<()> {
+    fn test_compile_run_useless_checker_wa() -> Result<()> {
         let checker_source_path = PathBuf::from("/tmp/checker.cpp");
         let checker_target_path = PathBuf::from("/tmp/checker");
         let testlib_path = PathBuf::from("/tmp/testlib.h");
 
-        std::fs::write(&checker_source_path, r#"
+        std::fs::write(
+            &checker_source_path,
+            r#"
             #include <iostream>
             int main() {
                 std::cout << "wa" << std::endl;
                 return 0;
             }
-        "#)?;
+        "#,
+        )?;
         // Touch testlib.h
         std::fs::write(&testlib_path, "")?;
 

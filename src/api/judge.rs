@@ -2,7 +2,14 @@ mod scoring;
 mod sender;
 
 use super::ApiResponse;
-use crate::{checker::{compile_checker, run_checker}, command::*, db::DbPool, gcp, models::*, MAX_FILE_SIZE};
+use crate::{
+    checker::{compile_checker, run_checker},
+    command::*,
+    db::DbPool,
+    gcp,
+    models::*,
+    MAX_FILE_SIZE,
+};
 use anyhow::Result;
 use chrono::prelude::*;
 use rocket::State;
