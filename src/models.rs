@@ -108,6 +108,7 @@ impl fmt::Display for Status {
 }
 
 impl Status {
+    #[allow(dead_code)]
     pub fn to_priority(&self) -> i32 {
         match *self {
             Status::AC => 1,
