@@ -120,14 +120,19 @@ mod tests {
             &checker_source_path,
             r#"
                 #include <iostream>
+                #include "testlib.h"
                 int main() {
-                    std::cout << "ok" << std::endl;
+                    std::cout << AC_MESSAGE << std::endl;
                     return 0;
                 }
             "#,
         )?;
-        // Touch testlib.h
-        std::fs::write(&testlib_path, "")?;
+        std::fs::write(
+            &testlib_path,
+            r#"
+                #define AC_MESSAGE "ok"
+            "#,
+        )?;
 
         compile_checker(&checker_source_path, &checker_target_path, &testlib_path)?;
 
@@ -146,15 +151,20 @@ mod tests {
         std::fs::write(
             &checker_source_path,
             r#"
-            #include <iostream>
-            int main() {
-                std::cout << "wa" << std::endl;
-                return 0;
-            }
-        "#,
+                #include <iostream>
+                #include "testlib.h"
+                int main() {
+                    std::cout << WA_MESSAGE << std::endl;
+                    return 0;
+                }
+            "#,
         )?;
-        // Touch testlib.h
-        std::fs::write(&testlib_path, "")?;
+        std::fs::write(
+            &testlib_path,
+            r#"
+                #define WA_MESSAGE "wa"
+            "#,
+        )?;
 
         compile_checker(&checker_source_path, &checker_target_path, &testlib_path)?;
 
