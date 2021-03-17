@@ -78,7 +78,8 @@ pub struct JudgeResponse {
     pub testcase_result_map: HashMap<i64, TestcaseResult>,
 }
 
-#[derive(Deserialize, Serialize, Clone, Copy, PartialEq)]
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq)]
 pub enum Status {
     AC,
     TLE,

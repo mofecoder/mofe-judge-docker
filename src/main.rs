@@ -1,6 +1,8 @@
 #![allow(renamed_and_removed_lints)]
+#![allow(clippy::unknown_clippy_lints)]
 
 mod api;
+mod checker;
 mod command;
 mod config;
 mod db;
