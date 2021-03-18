@@ -1,20 +1,30 @@
 FROM ubuntu:20.04
 
+ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
+
 SHELL ["/bin/bash", "-c"]
 
 # install compilers
 RUN \
-    apt update && \
-    apt install software-properties-common apt-transport-https dirmngr curl wget time iproute2 build-essential sudo unzip git -y && \
-    touch ~/.profile
+    apt update && apt install -y \
+        software-properties-common \
+        apt-transport-https \
+        dirmngr \
+        curl \
+        wget \
+        time \
+        iproute2 \
+        build-essential \
+        sudo \
+        unzip \
+        git
 
 # Raku install
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 379CE192D401AB61 && \
     echo "deb https://dl.bintray.com/nxadm/rakudo-pkg-debs `lsb_release -cs` main" | tee -a /etc/apt/sources.list.d/rakudo-pkg.list && \
     apt-get update && apt-get install apt-utils -y && apt-get install rakudo-pkg -y && \
     /opt/rakudo-pkg/bin/add-rakudo-to-path
-    #source ~/.profile
    
 # C#(mono) install
 RUN apt install gnupg ca-certificates -y && \
@@ -101,21 +111,10 @@ RUN \
     wget https://raw.githubusercontent.com/MikeMirzayanov/testlib/master/testlib.h && \
     wget https://github.com/atcoder/ac-library/releases/download/v1.0/ac-library.zip && unzip ac-library.zip
 
-# system
-RUN \
-    useradd --create-home cafecoder && \
-    echo 'cafecoder hard nproc 4096' >> /etc/security/limits.conf && \
-    chmod -R 777 /home && \
-    mkdir Main -m 777
-
-ENV TZ Asia/Tokyo
-
-COPY src /src
-COPY .env /
-COPY Cargo.lock /
-COPY Cargo.toml /
-COPY service-account-cafecoder.json /
-RUN cargo build --release
+# build cafecoder-docker-rs
+RUN mkdir cafecoder-docker-rs
+COPY ./* cafecoder-docker-rs/
+RUN cd cafecoder-docker-rs && cargo build --release
 
 WORKDIR / 
 
