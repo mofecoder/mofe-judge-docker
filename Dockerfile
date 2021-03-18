@@ -1,4 +1,6 @@
-FROM ubuntu:20.04
+# Ubuntu:20.04(amd64)
+# m1 mac だとハッシュを指定しないと arm64 で build してしまうので・・。
+FROM ubuntu@sha256:e3d7ff9efd8431d9ef39a144c45992df5502c995b9ba3c53ff70c5b52a848d9c
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
