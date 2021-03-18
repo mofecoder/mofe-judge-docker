@@ -1,87 +1,47 @@
-use crate::model::*;
+use crate::models::*;
+use crate::sandbox::*;
 use anyhow::Result;
-use std::{
-    fs::{File, Permissions},
-    io::Write,
-    os::unix::prelude::PermissionsExt,
-    process::Command,
-    sync::{Arc, Mutex},
-    time::{Duration, Instant},
-};
-use tokio::time::sleep;
+use std::convert::TryInto;
 
-pub fn create_sh(cmd: &str) -> Result<()> {
-    let mut f = File::create("./exec_cmd.sh")?;
+pub async fn exec_cmd(cmd: &str, time_limit: i32) -> Result<CmdResult> {
+    let sandbox = Sandbox::create(0u32)?;
 
-    f.write_all(
-        br#"
+    let meta_path = sandbox.path.join("meta.txt");
+    let script_path = sandbox.path.join("exec_cmd.sh");
+
+    std::fs::write(
+        &script_path,
+        format!(
+            "{}{}",
+            r#"
 #!/bin/bash
 export PATH=$PATH:/usr/local/go/bin
 export PATH="$HOME/.cargo/bin:$PATH"
-    "#,
+"#,
+            cmd,
+        )
+        .as_bytes(),
     )?;
-    f.write_all(&format!("{}\n", cmd).as_bytes())?;
-    f.write_all(b"echo $? > exit_code.txt")?;
 
-    let perms = Permissions::from_mode(0o777);
-    f.set_permissions(perms)?;
+    let output = sandbox.execute(
+        &ExecuteConfig {
+            meta: Some("meta.txt".to_string()),
+            time: Some(time_limit.try_into()?),
+            wall_time: Some(time_limit.try_into()?),
+            ..Default::default()
+        },
+        vec!["/bin/bash".to_string(), "exec_cmd.sh".to_string()],
+    )?;
 
-    Ok(())
-}
-
-pub async fn exec_cmd(cmd: &str, time_limit: i32) -> Result<CmdResult> {
-    create_sh(cmd)?;
-
-    let mut cmd = Command::new("sh");
-    cmd.arg("-c")
-        .arg("/usr/bin/time -v ./exec_cmd.sh 2>&1 | grep -E 'Maximum' | awk '{ print $6 }' > mem_usage.txt");
-
-    let mut child = cmd.spawn();
-    for _ in 1..10 {
-        if child.is_ok() {
-            break;
-        }
-
-        child = cmd.spawn();
-        sleep(Duration::new(1, 0)).await;
-    }
-
-    let child_arc = Arc::new(Mutex::new(child.unwrap()));
-
-    let child = child_arc.clone();
-    let cmd_handler = async move {
-        let start = Instant::now();
-        let res = child.lock().unwrap().wait();
-        let end = start.elapsed();
-
-        (res, end.as_millis() as i32)
-    };
-
-    let timeout = async {
-        sleep(Duration::new(time_limit as u64, 0)).await;
-    };
-
-    let time = tokio::select! {
-        _ = timeout => {
-            child_arc.lock().unwrap().kill()?; // todo: 子プロセスも kill
-            time_limit
-        }
-        res = cmd_handler => res.1
-    };
+    let meta: Meta = std::fs::read_to_string(&meta_path)?.parse()?;
+    let message = String::from_utf8_lossy(&output.stdout).to_string();
 
     Ok(CmdResult {
-        ok: String::from_utf8(std::fs::read("/userStderr.txt")?)
-            .unwrap()
-            .trim_end()
-            == &*"0",
-        time,
-        message: String::from_utf8(std::fs::read("/userStderr.txt")?).unwrap(),
-        stdout_size: 0, // todo
-        mem_usage: String::from_utf8(std::fs::read("/mem_usage.txt")?)
-            .unwrap()
-            .trim_end()
-            .parse()
-            .unwrap(),
+        ok: meta.exitcode == Some(0),
+        execution_time: meta.time.unwrap_or(0.0).floor() as i32,
+        stdout_size: message.len(),
+        message,
+        execution_memory: meta.cg_mem.unwrap_or(0) as i32,
     })
 }
 
