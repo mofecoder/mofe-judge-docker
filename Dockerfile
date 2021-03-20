@@ -110,8 +110,15 @@ RUN \
     wget https://raw.githubusercontent.com/MikeMirzayanov/testlib/master/testlib.h && \
     wget https://github.com/atcoder/ac-library/releases/download/v1.0/ac-library.zip && unzip ac-library.zip
 
+RUN \
+    apt install libcap-dev && \
+    git clone https://github.com/ioi/isolate.git /isolate
+COPY ./default.cf /isolate/default.cf
+RUN cd /isolate && make install
+
 # copy cafecoder-docker-rs
 COPY ./target/release/cafecoder-docker-rs /
+
 
 WORKDIR / 
 
