@@ -110,11 +110,12 @@ RUN \
     wget https://raw.githubusercontent.com/MikeMirzayanov/testlib/master/testlib.h && \
     wget https://github.com/atcoder/ac-library/releases/download/v1.0/ac-library.zip && unzip ac-library.zip
 
-# build cafecoder-docker-rs
-RUN mkdir cafecoder-docker-rs
-COPY ./* cafecoder-docker-rs/
-RUN cd cafecoder-docker-rs && cargo build --release
+# copy cafecoder-docker-rs
+COPY ./target/release/cafecoder-docker-rs /
 
 WORKDIR / 
 
-ENTRYPOINT ["./target/release/cafecoder-docker-rs"]
+RUN mkdir download
+ENV DOWNLOAD_ROOT=/download
+
+ENTRYPOINT ["./cafecoder-docker-rs"]
