@@ -1,5 +1,21 @@
 # cafecoder-docker-rs
 
+## docker
+イメージ + タグ
+```
+cafecoder_docker:2104
+```
+
+build
+```console
+$ docker-compose build
+```
+
+start
+```console
+$ docker-compose up -d
+```
+
 ## ioi/isolate サンドボックスの準備
 
 [ioi/isolate](https://github.com/ioi/isolate) の指示に従って、サンドボックスのインストールをしてください。
