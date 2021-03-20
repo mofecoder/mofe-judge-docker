@@ -6,7 +6,7 @@ use std::convert::TryInto;
 pub async fn exec_cmd(cmd: &str, time_limit: i32) -> Result<CmdResult> {
     let sandbox = Sandbox::create(0u32)?;
 
-    let meta_path = sandbox.path.join("meta.txt");
+    let meta_path = std::env::current_dir()?.join("meta.txt");
     let script_path = sandbox.path.join("exec_cmd.sh");
 
     std::fs::write(
@@ -25,9 +25,12 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
     let output = sandbox.execute(
         &ExecuteConfig {
-            meta: Some("meta.txt".to_string()),
+            meta: Some(meta_path.to_string_lossy().to_string()),
             time: Some(time_limit.try_into()?),
             wall_time: Some(time_limit.try_into()?),
+            dir: Some(vec![
+                format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
+            ]),
             ..Default::default()
         },
         vec!["/bin/bash".to_string(), "exec_cmd.sh".to_string()],
@@ -38,7 +41,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 
     Ok(CmdResult {
         ok: meta.exitcode == Some(0),
-        execution_time: meta.time.unwrap_or(0.0).floor() as i32,
+        execution_time: (meta.time.unwrap_or(0.0) * 1000.0).floor() as i32,
         stdout_size: message.len(),
         message,
         execution_memory: meta.cg_mem.unwrap_or(0) as i32,
