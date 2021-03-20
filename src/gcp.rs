@@ -3,12 +3,13 @@ use cloud_storage::Object;
 use std::{fs::File, io::Write};
 
 const SUBMIT_SOURCE_BUCKET: &str = "cafecoder-submit-source";
+const CHECKER_BUCKET: &str = "cafecoder-submit-source/checker";
 const TESTCASE_BUCKET: &str = "cafecoder-testcase";
 
-pub async fn download_submit_source(path: &str, name: &str) -> Result<()> {
-    let bytes = Object::download(SUBMIT_SOURCE_BUCKET, path).await?;
+pub async fn download_submit_source(source_name: &str, path: &str) -> Result<()> {
+    let bytes = Object::download(SUBMIT_SOURCE_BUCKET, source_name).await?;
 
-    let mut file = File::create(name)?;
+    let mut file = File::create(path)?;
     file.write_all(&bytes)?;
 
     Ok(())
@@ -32,4 +33,16 @@ pub async fn download_testcase(
     .await?;
 
     Ok((input_bytes, output_bytes))
+}
+
+pub async fn download_checker(checker_name: &str, path: &str) -> Result<()> {
+    let bytes = Object::download(
+        &format!("{}/{}", CHECKER_BUCKET, checker_name), 
+        "checker.cpp",
+    ).await?;
+
+    let mut file = File::create(path)?;
+    file.write_all(&bytes)?;
+
+    Ok(())
 }

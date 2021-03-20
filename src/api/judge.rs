@@ -12,6 +12,7 @@ use crate::{
 };
 use anyhow::Result;
 use chrono::prelude::*;
+use gcp::download_checker;
 use rocket::State;
 use rocket_contrib::{json, json::Json};
 use scoring::scoring;
@@ -28,6 +29,10 @@ use std::{
 #[post("/judge", format = "application/json", data = "<req>")]
 pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {
     let conn = Arc::clone(&conn);
+
+    if let Err(e) = download_checker("{gcp 上のパス}", "checker.cpp").await {
+        return ApiResponse::internal_server_error(e);
+    }
 
     // TODO download checker source and confirm testlib.h location and checker temporary location
     let checker_source_path: PathBuf = PathBuf::from("./checker.cpp");
