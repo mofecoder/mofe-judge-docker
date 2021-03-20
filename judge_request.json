@@ -1,6 +1,19 @@
 {
     "submit_id": 1,
-    "cmd": "./Main",
+    "cmd": "/judge/Main < /judge/testcase.txt > /judge/userStdout.txt",
     "time_limit": 2000,
-    "mem_limit": 256000,
+    "mem_limit": 256000000,
+
+    "testcases": [
+        {
+            "testcase_id": 1,
+            "name": "example01"
+        }
+    ],
+    
+    "problem": {
+        "problem_id": 2,
+        "uuid": "bccf655b-a73a-4f55-ae89-cd5142a1a21f",
+        "checker_path": "checker_sources/dummy_checker.cpp"
+    }
 }
