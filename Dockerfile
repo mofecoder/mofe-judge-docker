@@ -23,10 +23,7 @@ RUN \
         git
 
 # Raku install
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 379CE192D401AB61 && \
-    echo "deb https://dl.bintray.com/nxadm/rakudo-pkg-debs `lsb_release -cs` main" | tee -a /etc/apt/sources.list.d/rakudo-pkg.list && \
-    apt-get update && apt-get install apt-utils -y && apt-get install rakudo-pkg -y && \
-    /opt/rakudo-pkg/bin/add-rakudo-to-path
+RUN apt-get install -y rakudo
    
 # C#(mono) install
 RUN apt install gnupg ca-certificates -y && \
