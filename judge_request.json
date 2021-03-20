@@ -1,0 +1,6 @@
+{
+    "submit_id": 1,
+    "cmd": "./Main",
+    "time_limit": 2000,
+    "mem_limit": 256000,
+}

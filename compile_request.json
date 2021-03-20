@@ -1,0 +1,4 @@
+{
+    "submit_id": 1,
+    "cmd": "g++ Main.cpp -o Main"
+}
