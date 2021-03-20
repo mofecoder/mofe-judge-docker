@@ -8,7 +8,8 @@ const TESTCASE_BUCKET: &str = "cafecoder-testcase";
 pub async fn download_submit_source(path: &str, name: &str) -> Result<()> {
     let bytes = Object::download(SUBMIT_SOURCE_BUCKET, path).await?;
 
-    let mut file = File::create(name)?;
+    let download_root = std::env::var("DOWNLOAD_ROOT")?;
+    let mut file = File::create(format!("{}/{}", &download_root, name))?;
     file.write_all(&bytes)?;
 
     Ok(())
