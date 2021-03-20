@@ -153,4 +153,27 @@ mod tests {
         let meta = std::fs::read_to_string(&meta_path).unwrap();
         assert!(meta.contains("status:TO"));
     }
+
+    #[test]
+    fn test_environment_variable() {
+        let sandbox = Sandbox::create(0u32).unwrap();
+
+        let output = sandbox
+            .execute(
+                &ExecuteConfig {
+                    processes: Some(1),
+                    env: Some(vec!["SANDBOX_ROOT=directory".to_string()]),
+                    ..Default::default()
+                },
+                vec![
+                    "/bin/sh".to_string(),
+                    "-c".to_string(),
+                    "echo $SANDBOX_ROOT".to_string(),
+                ],
+            )
+            .unwrap();
+        let output = String::from_utf8_lossy(&output.stdout);
+
+        assert!(output.trim() == "directory");
+    }
 }
