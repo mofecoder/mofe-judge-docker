@@ -45,7 +45,7 @@ impl Default for ExecuteConfig {
             stderr: None,
             stderr_to_stdout: false,
             chdir: None,
-            processes: None,
+            processes: Some(0),
             verbose: false,
             silent: false,
 

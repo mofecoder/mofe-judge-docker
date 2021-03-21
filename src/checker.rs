@@ -30,6 +30,9 @@ pub fn compile_checker(
             wall_time: Some(60.0),
             cg_mem: Some(1_024_000),
             // Unlimited processes is needed for compiler.
+            dir: Some(vec![
+                format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
+            ]),
             processes: Some(0),
             full_env: true,
             ..Default::default()

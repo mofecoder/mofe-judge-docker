@@ -21,6 +21,7 @@ pub struct CmdResult {
 pub struct Problem {
     pub problem_id: i64,
     pub uuid: String,
+    pub checker_path: String,
 }
 
 #[derive(Serialize, Deserialize, FromRow)]

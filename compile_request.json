@@ -1,0 +1,4 @@
+{
+    "submit_id": 1,
+    "cmd": "g++ /judge/Main.cpp -o /judge/Main"
+}

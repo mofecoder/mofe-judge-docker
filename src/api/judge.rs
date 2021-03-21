@@ -12,6 +12,7 @@ use crate::{
 };
 use anyhow::Result;
 use chrono::prelude::*;
+use gcp::download_checker;
 use rocket::State;
 use rocket_contrib::{json, json::Json};
 use scoring::scoring;
@@ -29,9 +30,13 @@ use std::{
 pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {
     let conn = Arc::clone(&conn);
 
+    if let Err(e) = download_checker(&req.0.problem.checker_path, "checker.cpp").await {
+        return ApiResponse::internal_server_error(e);
+    }
+
     // TODO download checker source and confirm testlib.h location and checker temporary location
-    let checker_source_path: PathBuf = PathBuf::from("./checker.cpp");
-    let checker_target_path: PathBuf = PathBuf::from("./temp_dir/checker.cpp");
+    let checker_source_path: PathBuf = crate::JUDGE_DIR.join("checker.cpp");
+    let checker_target_path: PathBuf = crate::JUDGE_DIR.join("checker");
     let testlib_path: PathBuf = PathBuf::from("/testlib.h");
     match compile_checker(&checker_source_path, &checker_target_path, &testlib_path) {
         Ok(_) => (),
@@ -75,11 +80,11 @@ async fn try_testcases(
         let conn = Arc::clone(&conn);
         let testcase_data = gcp::download_testcase(&req.problem.uuid, &testcase.name).await?;
 
-        let mut file = File::create("testcase.txt")?;
+        let mut file = File::create(&crate::JUDGE_DIR.join("testcase.txt"))?;
         file.write_all(&testcase_data.0)?;
 
         let cmd_result = exec_cmd(&req.cmd, req.time_limit).await?;
-        let user_output = fs::read("userStdout.txt")?;
+        let user_output = fs::read(&crate::JUDGE_DIR.join("userStdout.txt"))?;
 
         let status = judging(
             &cmd_result,
@@ -164,8 +169,8 @@ async fn insert_testcase_result(
 
     sqlx::query(
         r#"
-        INSERT INTO testcase_results (submit_id, testcase_id, status, execution_time, execution_memory, created_at)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO testcase_results (submit_id, testcase_id, status, execution_time, execution_memory, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
         "#
     )
     .bind(submit_id)
@@ -173,6 +178,7 @@ async fn insert_testcase_result(
     .bind(testcase_result.status.to_string())
     .bind(testcase_result.cmd_result.execution_time)
     .bind(testcase_result.cmd_result.execution_memory)
+    .bind(Local::now().naive_local())
     .bind(Local::now().naive_local())
     .execute(conn)
     .await?;

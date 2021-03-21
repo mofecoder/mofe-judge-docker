@@ -32,7 +32,7 @@ pub async fn scoring(
         r#"
     SELECT testcase_id, testcase_set_id FROM testcase_testcase_sets
     INNER JOIN testcases ON testcase_testcase_sets.testcase_id = testcases.id
-    WHERE problem_id = ? AND testcase_testcase_sets.deleted IS NULL AND testcases.deleted_at IS NULL
+    WHERE problem_id = ? AND testcase_testcase_sets.deleted_at IS NULL AND testcases.deleted_at IS NULL
     "#,
     )
     .bind(req.problem.problem_id)

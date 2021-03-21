@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Meta {
     pub cg_mem: Option<u64>,
     pub cg_oom_killed: Option<u64>,
@@ -24,7 +24,7 @@ impl FromStr for Meta {
 
         for line in value.lines() {
             if let Some(pos) = line.find(':') {
-                let line_key = &line[0..pos];
+                let line_key = (&line[0..pos]).replace("-", "_");
                 let line_value = &line[pos + 1..];
 
                 macro_rules! push_meta {

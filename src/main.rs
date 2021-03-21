@@ -14,7 +14,11 @@ mod sandbox;
 extern crate rocket;
 
 use anyhow::Result;
-use api::judge::judge;
+use api::{
+    judge::judge,
+    download::download,
+    compile::compile,
+};
 use config::Config;
 use once_cell::sync::Lazy;
 use std::sync::Arc;
@@ -25,6 +29,10 @@ const MAX_FILE_SIZE: usize = 200_000_000; // 200MB
 #[allow(dead_code)]
 const MAX_MEMORY_USAGE: i32 = 1_024_000; // 1024MB
 
+static JUDGE_DIR: Lazy<std::path::PathBuf> = Lazy::new(|| {
+    std::env::current_dir().unwrap().join("temp")
+});
+
 #[rocket::main]
 async fn main() -> Result<()> {
     let conn = {
@@ -34,7 +42,7 @@ async fn main() -> Result<()> {
 
     rocket::ignite()
         .manage(conn)
-        .mount("/", routes![judge])
+        .mount("/", routes![judge, download, compile])
         .launch()
         .await?;
 
