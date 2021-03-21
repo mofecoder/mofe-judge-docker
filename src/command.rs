@@ -28,6 +28,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
             meta: Some(meta_path.to_string_lossy().to_string()),
             time: Some(time_limit.try_into()?),
             wall_time: Some(time_limit.try_into()?),
+            full_env: true,
             dir: Some(vec![
                 format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
             ]),

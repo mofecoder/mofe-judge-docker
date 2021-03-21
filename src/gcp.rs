@@ -11,6 +11,7 @@ pub async fn download_submit_source(source_name: &str, path: &str) -> Result<()>
 
     let path = crate::JUDGE_DIR.join(path);
     let mut file = File::create(&path)?;
+
     file.write_all(&bytes)?;
 
     Ok(())
