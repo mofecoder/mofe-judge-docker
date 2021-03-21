@@ -28,6 +28,10 @@ export PATH="$HOME/.cargo/bin:$PATH"
             meta: Some("meta.txt".to_string()),
             time: Some(time_limit.try_into()?),
             wall_time: Some(time_limit.try_into()?),
+            full_env: true,
+            env: Some(vec![
+                format!("SANDBOX_ROOT={}", sandbox.path.to_string_lossy()),
+            ]),
             ..Default::default()
         },
         vec!["/bin/bash".to_string(), "exec_cmd.sh".to_string()],
