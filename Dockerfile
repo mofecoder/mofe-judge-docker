@@ -121,7 +121,10 @@ RUN cd cafecoder-docker-rust && \
     source $HOME/.cargo/env && \
     cargo build --release && \
     cp target/release/cafecoder-docker-rs / && \
-    cp .env /
+    cp .env / && \
+    cp service-account-cafecoder.json / && \
+    cp default.cf / && \
+    mkdir /temp
 
 WORKDIR / 
 
