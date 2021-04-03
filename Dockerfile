@@ -116,9 +116,12 @@ RUN \
 COPY ./default.cf /isolate/default.cf
 RUN cd /isolate && make install
 
-# copy cafecoder-docker-rs
-COPY ./target/release/cafecoder-docker-rs /
-
+COPY . /cafecoder-docker-rust
+RUN cd cafecoder-docker-rust && \
+    source $HOME/.cargo/env && \
+    cargo build --release && \
+    cp target/release/cafecoder-docker-rs / && \
+    cp .env /
 
 WORKDIR / 
 
