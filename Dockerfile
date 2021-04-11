@@ -131,7 +131,8 @@ WORKDIR /
 RUN mkdir download
 ENV DOWNLOAD_ROOT=/download
 RUN mkdir box
-RUN mkdir judge
+RUN mkdir judge && chmod -R 777 judge
+RUN cp /testlib.h /judge/testlib.h
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["./cafecoder-docker-rs"]
