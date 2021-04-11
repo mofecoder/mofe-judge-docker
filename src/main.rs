@@ -26,7 +26,7 @@ const MAX_FILE_SIZE: usize = 200_000_000; // 200MB
 const MAX_MEMORY_USAGE: i32 = 1_024_000; // 1024MB
 
 static JUDGE_DIR: Lazy<std::path::PathBuf> =
-    Lazy::new(|| std::env::current_dir().unwrap().join("temp"));
+    Lazy::new(|| std::env::current_dir().unwrap().join("judge"));
 
 #[rocket::main]
 async fn main() -> Result<()> {
