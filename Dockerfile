@@ -130,5 +130,8 @@ WORKDIR /
 
 RUN mkdir download
 ENV DOWNLOAD_ROOT=/download
+RUN mkdir box
+RUN mkdir judge
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["./cafecoder-docker-rs"]

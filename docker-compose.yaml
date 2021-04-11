@@ -4,3 +4,4 @@ services:
   cafecoder_docker:
     build: .
     image: cafecoder_docker:2104
+    privileged: true
