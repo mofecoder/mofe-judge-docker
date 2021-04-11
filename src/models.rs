@@ -33,7 +33,7 @@ pub struct Testcase {
 #[derive(sqlx::FromRow)]
 pub struct TestcaseSets {
     pub id: i64,
-    pub points: u64,
+    pub points: i64,
 }
 
 #[derive(sqlx::FromRow)]
