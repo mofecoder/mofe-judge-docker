@@ -3,5 +3,5 @@ version: "3"
 services:
   cafecoder_docker:
     build: .
-    image: cafecoder_docker:2104
+    image: cafecoder_docker:2105
     privileged: true

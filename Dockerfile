@@ -14,7 +14,7 @@ RUN mkdir download
 RUN mkdir box
 RUN mkdir judge
 
-# install compilers
+# install common tools
 RUN \
     apt update && apt install -y \
         software-properties-common \
@@ -32,16 +32,18 @@ RUN \
 
 # Raku install
 RUN \
-    apt-get install -y rakudo && \
+    apt update && apt-get install -y \
+        rakudo && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
    
 # C#(mono) install
 RUN \
-    apt install gnupg ca-certificates -y && \
+    apt update && apt install -y \
+        gnupg ca-certificates && \
     yes | apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
     echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list && \
-    apt update && \
-    apt install mono-devel -y && \
+    apt update && apt install -y \
+        mono-devel && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # C#(.NET) install
@@ -54,17 +56,17 @@ RUN \
 
 # C/C++ install
 RUN \
-    apt-get install g++-10 gcc-10 -y && \
+    apt update && apt-get install g++-10 gcc-10 -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Java11 install
 RUN \
-    apt install default-jdk -y && \
+    apt update && apt install default-jdk -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Python3 install
 RUN \
-    apt install python3.9 -y && \
+    apt update && apt install python3.9 -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Pypy3 install
@@ -100,7 +102,7 @@ RUN \
     
 # Ruby install
 RUN \
-    apt install make libffi-dev openssl libssl-dev zlib1g-dev -y && \
+    apt update apt install make libffi-dev openssl libssl-dev zlib1g-dev -y && \
     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv && \
     echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.profile && \
     echo 'eval "$(rbenv init -)"' >> ~/.profile && \
@@ -111,7 +113,7 @@ RUN \
 
 # Kotlin install
 RUN \
-    apt install zip unzip -y && \
+    apt update && apt install zip unzip -y && \
     curl -s https://get.sdkman.io | bash && \
     bash && \
     echo 'source "/root/.sdkman/bin/sdkman-init.sh"' >> ~/.profile && \
@@ -121,13 +123,13 @@ RUN \
 
 # Fortran install
 RUN \
-    apt install gfortran-10 -y && \
+    apt update && apt install gfortran-10 -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
     
 # crystal
 RUN \
     curl -sSL https://dist.crystal-lang.org/apt/setup.sh | bash && \
-    apt install crystal -y && \
+    apt update && apt install crystal -y && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
     
 # Perl install
