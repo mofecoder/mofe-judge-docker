@@ -1,14 +1,14 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use std::{collections::HashMap, fmt};
+use std::{collections::HashMap, fmt, fmt::Debug};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct TestcaseResult {
     pub status: Status,
     pub cmd_result: CmdResult,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct CmdResult {
     pub execution_time: i32,   // ms
     pub stdout_size: usize,    // byte
@@ -17,14 +17,14 @@ pub struct CmdResult {
     pub message: String,       // コンパイルメッセージ
 }
 
-#[derive(Serialize, Deserialize, FromRow)]
+#[derive(Serialize, Deserialize, FromRow, Debug)]
 pub struct Problem {
     pub problem_id: i64,
     pub uuid: String,
     pub checker_path: String,
 }
 
-#[derive(Serialize, Deserialize, FromRow)]
+#[derive(Serialize, Deserialize, FromRow, Debug)]
 pub struct Testcase {
     pub testcase_id: i64,
     pub name: String,
@@ -42,7 +42,7 @@ pub struct TestcaseTestcaseSets {
     pub testcase_set_id: i64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CompileRequest {
     pub submit_id: i64,
     pub cmd: String, // コンパイルコマンド or 実行コマンド
@@ -51,14 +51,14 @@ pub struct CompileRequest {
 #[derive(Serialize, Deserialize)]
 pub struct CompileResponse(pub CmdResult);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DownloadRequest {
     pub submit_id: i64,
     pub code_path: String, // gcp 上のパス
     pub filename: String,  // Main.ext
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct JudgeRequest {
     pub submit_id: i64,
     pub cmd: String,     // コンパイルコマンド or 実行コマンド
@@ -69,7 +69,7 @@ pub struct JudgeRequest {
     pub problem: Problem,         // pub problem: Problem,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct JudgeResponse {
     pub submit_id: i64,
     pub status: Status,
