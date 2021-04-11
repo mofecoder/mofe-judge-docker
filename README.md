@@ -1,19 +1,25 @@
 # cafecoder-docker-rs
 
 ## docker
-イメージ + タグ
-```
+
+### イメージ + タグ
+
+```command
 cafecoder_docker:2104
 ```
 
-build
-```console
+### build
+
+```command
 $ docker-compose build
 ```
 
-start
-```console
-$ docker-compose up -d
+### start
+
+`--privileged=true` が必要
+
+```command
+$ docker start --privileged=true cafecoder_docker:2104
 ```
 
 ## ioi/isolate サンドボックスの準備
@@ -25,8 +31,8 @@ $ docker-compose up -d
 
 ## 実行
 
-```
-cargo run
+```command
+$ cargo run
 ```
 
 ## テスト
@@ -34,5 +40,5 @@ cargo run
 テストはサイドエフェクトがあるため、`--test-threads=1` にしなければならない。
 
 ```command
-cargo test -- --test-threads=1
+$ cargo test -- --test-threads=1
 ```
