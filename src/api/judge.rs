@@ -10,7 +10,7 @@ use crate::{
     models::*,
     MAX_FILE_SIZE,
 };
-use anyhow::Result;
+use anyhow::{Result, bail};
 use chrono::prelude::*;
 use gcp::download_checker;
 use rocket::State;
@@ -84,6 +84,10 @@ async fn try_testcases(
         file.write_all(&testcase_data.0)?;
 
         let cmd_result = exec_cmd(&req.cmd, req.time_limit).await?;
+        if !cmd_result.ok {
+            bail!(cmd_result.message)
+        }
+        dbg!(&cmd_result);
         let user_output = fs::read(&crate::JUDGE_DIR.join("userStdout.txt"))?;
 
         let status = judging(
@@ -156,6 +160,7 @@ fn judging(
     }
 
     let result = run_checker(checker_path, testcase_input, user_output, testcase_output)?;
+
     Ok(result)
 }
 
