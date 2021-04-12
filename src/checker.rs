@@ -82,6 +82,10 @@ pub fn run_checker(
     let answer_path = sandbox.path.join("ans.txt");
     std::fs::write(&answer_path, testcase_output)?;
 
+    dbg!("Testcase input: {}", &testcase_input);
+    dbg!("User output:    {}", &user_output);
+    dbg!("Testcase output:{}", &testcase_output);
+
     let output = sandbox.execute(
         &ExecuteConfig {
             // TODO confirm time limit and memory limit
@@ -97,7 +101,9 @@ pub fn run_checker(
             "./ans.txt".to_string(),
         ],
     )?;
-    let output = String::from_utf8_lossy(&output.stdout);
+    dbg!("Output: {}", String::from_utf8_lossy(&output.stdout));
+    let output = String::from_utf8_lossy(&output.stderr);
+    dbg!("Stderr: {}", &output);
 
     Sandbox::cleanup(0)?;
 
