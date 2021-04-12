@@ -55,7 +55,7 @@ pub async fn scoring(
     for testcase_set in &testcase_sets {
         let mut is_ac = true;
         for testcase_id in &testcase_set_map[&testcase_set.id] {
-            if let Status::AC = submit_result.testcase_result_map[testcase_id].status {
+            if submit_result.testcase_result_map[testcase_id].status != Status::AC {
                 is_ac = false;
                 break;
             }
