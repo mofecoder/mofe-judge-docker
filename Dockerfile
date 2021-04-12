@@ -129,7 +129,7 @@ RUN cd cafecoder-docker-rust && \
 WORKDIR / 
 
 # 心にゆとりができたらかえる
-RUN mv /rust_workspace /judge/rust_workspace
+RUN mv /rust_workspace /judge
 RUN mkdir /download
 ENV DOWNLOAD_ROOT=/download
 RUN mkdir /box
