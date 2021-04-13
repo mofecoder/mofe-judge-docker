@@ -20,7 +20,7 @@ pub async fn compile(req: Json<CompileRequest>, conn: State<'_, Arc<DbPool>>) ->
     };
 
     if !cmd_res.ok {
-        if let Err(e) = send_ce_result(conn, req.submit_id).await {
+        if let Err(e) = send_ce_result(conn, req.submit_id, &cmd_res.message).await {
             return ApiResponse::internal_server_error(e)
         }
     }
@@ -30,7 +30,7 @@ pub async fn compile(req: Json<CompileRequest>, conn: State<'_, Arc<DbPool>>) ->
     ApiResponse::ok(json!(resp))
 }
 
-pub async fn send_ce_result(conn: Arc<DbPool>, submit_id: i64) -> Result<()> {
+pub async fn send_ce_result(conn: Arc<DbPool>, submit_id: i64, msg: &str) -> Result<()> {
     let conn = Arc::as_ref(&conn);
 
     sqlx::query(
@@ -38,10 +38,12 @@ pub async fn send_ce_result(conn: Arc<DbPool>, submit_id: i64) -> Result<()> {
         UPDATE submits
         SET
             status = 'CE'
+            , compile_error = ? 
             , point = 0
         WHERE id = ? AND deleted_at IS NULL
         "#,
     )
+    .bind(msg)
     .bind(submit_id)
     .execute(conn)
     .await?;
