@@ -128,14 +128,15 @@ RUN cd cafecoder-docker-rust && \
 
 WORKDIR / 
 
-# 心にゆとりができたらかえる
-RUN mkdir -p /judge/rust_workspace
-RUN mv /rust_workspace /judge/rust_workspace
+RUN mkdir /judge
 RUN mkdir /download
-ENV DOWNLOAD_ROOT=/download
 RUN mkdir /box
+RUN mv /rust_workspace /judge
 RUN mkdir -p /judge/Main && chmod -R 777 judge
 RUN cp /testlib.h /judge/testlib.h
+
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV DOWNLOAD_ROOT=/download
 
 ENTRYPOINT ["./cafecoder-docker-rs"]
