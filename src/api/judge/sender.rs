@@ -13,6 +13,7 @@ pub async fn send_result(conn: Arc<DbPool>, submit_result: &JudgeResponse) -> Re
             , execution_time = ?
             , execution_memory = ?
             , point = ?
+            , compile_error = ''
         WHERE id = ? AND deleted_at IS NULL
         "#,
     )
