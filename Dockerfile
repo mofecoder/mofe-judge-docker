@@ -133,10 +133,18 @@ RUN mkdir /download
 RUN mkdir /box
 RUN mv /rust_workspace /judge
 RUN mkdir -p /judge/Main && chmod -R 777 judge
+RUN chmod 777 /root
 RUN cp /testlib.h /judge/testlib.h
 
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV DOWNLOAD_ROOT=/download
+ENV DOTNET_ROOT=$HOME/dotnet
+ENV PATH $PATH:$HOME/dotnet
+ENV PATH $PATH:/usr/local/go/bin
+ENV PATH $PATH:$HOME/.cargo/bin
+ENV PATH $PATH:/root/.nimble/bin
+ENV PATH $PATH:$HOME/.rbenv/bin
+ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
 
 ENTRYPOINT ["./cafecoder-docker-rs"]

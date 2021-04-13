@@ -30,10 +30,11 @@ cd /judge
             time: Some(time_limit.try_into()?),
             wall_time: Some(time_limit.try_into()?),
             full_env: true,
-            dir: Some(vec![format!(
-                "/judge={}:rw",
-                crate::JUDGE_DIR.to_string_lossy()
-            )]),
+            dir: Some(vec![
+                format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
+                "/root=/root".to_string(),
+                "/etc/alternatives".to_string(),
+            ]),
             ..Default::default()
         },
         vec!["/bin/bash".to_string(), "exec_cmd.sh".to_string()],
