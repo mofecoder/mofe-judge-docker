@@ -49,6 +49,8 @@ pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> Api
         Err(e) => return ApiResponse::internal_server_error(e),
     };
 
+    dbg!(&submit_result);
+
     submit_result.score = match scoring(conn.clone(), &req, &submit_result).await {
         Ok(score) => score,
         Err(e) => return ApiResponse::internal_server_error(e),

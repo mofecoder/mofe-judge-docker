@@ -4,7 +4,7 @@ use super::ApiResponse;
 use crate::{
     command::exec_cmd,
     db::DbPool,
-    models::{CompileRequest, CompileResponse, JudgeResponse},
+    models::{CompileRequest, CompileResponse},
 };
 use anyhow::Result;
 use rocket::State;
@@ -19,8 +19,15 @@ pub async fn compile(req: Json<CompileRequest>, conn: State<'_, Arc<DbPool>>) ->
         Err(e) => return ApiResponse::internal_server_error(e),
     };
 
+    dbg!(&cmd_res);
+
     if !cmd_res.ok {
-        if let Err(e) = send_ce_result(conn, req.submit_id, &cmd_res.message).await {
+        let user_stderr_u8 = std::fs::read(&crate::JUDGE_DIR.join("userStderr.txt")).unwrap_or_else(|_| Vec::new());
+        let user_stderr= match String::from_utf8(user_stderr_u8) {
+            Ok(s) => s,
+            Err(e) => return ApiResponse::internal_server_error(anyhow::anyhow!(e)),
+        };
+        if let Err(e) = send_ce_result(conn, req.submit_id, &user_stderr).await {
             return ApiResponse::internal_server_error(e)
         }
     }

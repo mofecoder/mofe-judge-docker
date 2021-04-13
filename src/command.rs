@@ -30,16 +30,21 @@ cd /judge
             time: Some(time_limit.try_into()?),
             wall_time: Some(time_limit.try_into()?),
             full_env: true,
-            dir: Some(vec![
-                format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
-            ]),
+            dir: Some(vec![format!(
+                "/judge={}:rw",
+                crate::JUDGE_DIR.to_string_lossy()
+            )]),
             ..Default::default()
         },
         vec!["/bin/bash".to_string(), "exec_cmd.sh".to_string()],
     )?;
 
     let meta: Meta = std::fs::read_to_string(&meta_path)?.parse()?;
-    let message = String::from_utf8_lossy(&output.stdout).to_string();
+    let message = format!(
+        "isolate error\nstdout:{}\nstderr:{}\n",
+        String::from_utf8_lossy(&output.stdout).to_string(),
+        String::from_utf8_lossy(&output.stderr).to_string(),
+    );
 
     Ok(CmdResult {
         ok: meta.exitcode == Some(0),
