@@ -24,6 +24,7 @@ static CONFIG: Lazy<Config> = Lazy::new(|| config::load_config().unwrap());
 const MAX_FILE_SIZE: usize = 200_000_000; // 200MB
 #[allow(dead_code)]
 const MAX_MEMORY_USAGE: i32 = 1_024_000; // 1024MB
+const MAX_STDERR_SIZE: usize = 5_000; // 5KB
 
 static JUDGE_DIR: Lazy<std::path::PathBuf> =
     Lazy::new(|| std::env::current_dir().unwrap().join("judge"));
