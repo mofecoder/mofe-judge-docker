@@ -1,9 +1,11 @@
 use crate::models::*;
 use crate::sandbox::*;
 use anyhow::Result;
-use std::convert::TryInto;
+use std::time::Duration;
+use tokio::process::Command;
 
-pub async fn exec_cmd(cmd: &str, time_limit: i32) -> Result<CmdResult> {
+// time_limit は sec 単位
+pub async fn exec_execute_cmd(cmd: &str, time_limit: f64) -> Result<CmdResult> {
     let sandbox = Sandbox::create(0u32)?;
 
     let meta_path = std::env::current_dir()?.join("meta.txt");
@@ -27,12 +29,12 @@ cd /judge
     let output = sandbox.execute(
         &ExecuteConfig {
             meta: Some(meta_path.to_string_lossy().to_string()),
-            time: Some(time_limit.try_into()?),
-            wall_time: Some(time_limit.try_into()?),
+            time: Some(time_limit),
+            wall_time: Some(time_limit),
             full_env: true,
             dir: Some(vec![
                 format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
-                "/root=/root".to_string(),
+                "/root=/root:rw".to_string(),
                 "/etc/alternatives".to_string(),
             ]),
             ..Default::default()
@@ -56,4 +58,48 @@ cd /judge
     })
 }
 
-// https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=748440ceb10a1797d4e5ff14c57bdfeb
+// time_limit は sec 単位
+pub async fn exec_compile_cmd(cmd: &str, time_limit: i32) -> Result<CmdResult> {
+    let script_path = "/judge/exec_cmd.sh";
+
+    std::fs::write(
+        &script_path,
+        format!(
+            "{}{}",
+            r#"
+#!/bin/bash
+export PATH=$PATH:/usr/local/go/bin
+export PATH="$HOME/.cargo/bin:$PATH"
+cd /judge
+"#,
+            cmd,
+        )
+        .as_bytes(),
+    )?;
+
+    let child = Command::new("/bin/bash")
+        .current_dir("/judge")
+        .arg("exec_cmd.sh")
+        .spawn()?;
+    let output = tokio::time::timeout(Duration::new(time_limit as u64, 0), async {
+        child.wait_with_output().await
+    })
+    .await??;
+
+    Command::new("rm").arg("/judge/userStderr.txt").output().await?;
+    
+
+    let message = format!(
+        "{}{}",
+        String::from_utf8_lossy(&output.stdout).to_string(),
+        String::from_utf8_lossy(&output.stderr).to_string(),
+    );
+
+    Ok(CmdResult {
+        ok: output.status.success(),
+        execution_time: 0,
+        stdout_size: message.len(),
+        message,
+        execution_memory: 0,
+    })
+}
