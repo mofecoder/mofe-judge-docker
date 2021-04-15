@@ -10,7 +10,7 @@ use crate::{
     models::*,
     MAX_FILE_SIZE,
 };
-use anyhow::{Result, bail};
+use anyhow::Result;
 use chrono::prelude::*;
 use gcp::download_checker;
 use rocket::State;
@@ -85,24 +85,26 @@ async fn try_testcases(
         let mut file = File::create(&crate::JUDGE_DIR.join("testcase.txt"))?;
         file.write_all(&testcase_data.0)?;
 
-        let cmd_result = exec_cmd(&req.cmd, req.time_limit).await?;
-        if !cmd_result.ok {
-            bail!(cmd_result.message)
-        }
+        let cmd_result = exec_execute_cmd(&req.cmd, req.time_limit as f64 / 1000.0).await?;
         dbg!(&cmd_result);
-        let user_output = fs::read(&crate::JUDGE_DIR.join("userStdout.txt"))?;
 
-        let status = judging(
-            &cmd_result,
-            req.time_limit,
-            req.mem_limit,
-            &String::from_utf8(testcase_data.0)?,
-            &String::from_utf8(user_output)?,
-            &String::from_utf8(testcase_data.1)?,
-            checker_path,
-        )?;
+        let testcase_result = {
+            let user_output = fs::read(&crate::JUDGE_DIR.join("userStdout.txt"))?;
 
-        let testcase_result = TestcaseResult { status, cmd_result };
+            let status = judging(
+                &cmd_result,
+                req.time_limit,
+                req.mem_limit,
+                &String::from_utf8(testcase_data.0)?,
+                &String::from_utf8(user_output)?,
+                &String::from_utf8(testcase_data.1)?,
+                checker_path,
+            )?;
+
+            TestcaseResult { status, cmd_result }
+        };
+
+        dbg!(&testcase_result);
 
         update_result(&mut submit_result, &testcase_result);
 
@@ -147,18 +149,21 @@ fn judging(
     testcase_output: &str,
     checker_path: &Path,
 ) -> Result<Status> {
-    if !cmd_result.ok {
-        return Ok(Status::RE);
-    }
     if cmd_result.execution_time > time_limit {
         return Ok(Status::TLE);
     }
+
     // TODO Sandbox に output limit を渡す
     if cmd_result.stdout_size > MAX_FILE_SIZE {
         return Ok(Status::OLE);
     }
+
     if cmd_result.execution_memory > mem_limit {
         return Ok(Status::MLE);
+    }
+
+    if !cmd_result.ok {
+        return Ok(Status::RE);
     }
 
     let result = run_checker(checker_path, testcase_input, user_output, testcase_output)?;
