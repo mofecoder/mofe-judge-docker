@@ -116,6 +116,36 @@ RUN \
 COPY ./default.cf /isolate/default.cf
 RUN cd /isolate && make install
 
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENV DOWNLOAD_ROOT=/download
+ENV DOTNET_ROOT=$HOME/dotnet
+ENV PATH $PATH:$HOME/dotnet
+ENV PATH $PATH:/usr/local/go/bin
+ENV PATH $PATH:$HOME/.cargo/bin
+ENV PATH $PATH:/root/.nimble/bin
+ENV PATH $PATH:$HOME/.rbenv/bin
+ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
+
+RUN mkdir /judge
+RUN mkdir /download
+RUN mkdir /box
+RUN mv /rust_workspace /judge
+RUN mkdir -p /judge/Main && chmod -R 777 /judge
+RUN chmod 777 /root
+RUN cp /testlib.h /judge/testlib.h
+
+#RUN mkdir -p /cafecoder-docker-rust/src
+#COPY dummy.rs /cafecoder-docker-rust/src/main.rs
+#COPY Cargo.toml /cafecoder-docker-rust
+#COPY Cargo.lock /cafecoder-docker-rust
+#COPY .env /cafecoder-docker-rust
+#COPY service-account-cafecoder.json /cafecoder-docker-rust
+#COPY default.cf /cafecoder-docker-rust
+#COPY service-account-cafecoder.json /cafecoder-docker-rust
+#RUN cd cafecoder-docker-rust && source $HOME/.cargo/env && cargo build --release
+
+#COPY src/ /cafecoder-docker-rust/src
 COPY . /cafecoder-docker-rust
 RUN cd cafecoder-docker-rust && \
     source $HOME/.cargo/env && \
@@ -128,23 +158,6 @@ RUN cd cafecoder-docker-rust && \
 
 WORKDIR / 
 
-RUN mkdir /judge
-RUN mkdir /download
-RUN mkdir /box
-RUN mv /rust_workspace /judge
-RUN mkdir -p /judge/Main && chmod -R 777 judge
-RUN chmod 777 /root
-RUN cp /testlib.h /judge/testlib.h
-
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-ENV DOWNLOAD_ROOT=/download
-ENV DOTNET_ROOT=$HOME/dotnet
-ENV PATH $PATH:$HOME/dotnet
-ENV PATH $PATH:/usr/local/go/bin
-ENV PATH $PATH:$HOME/.cargo/bin
-ENV PATH $PATH:/root/.nimble/bin
-ENV PATH $PATH:$HOME/.rbenv/bin
-ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
+RUN source $HOME/.profile && dotnet -v ; exit 0
 
 ENTRYPOINT ["./cafecoder-docker-rs"]
