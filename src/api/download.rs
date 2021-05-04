@@ -4,9 +4,12 @@ use rocket_contrib::{json, json::Json};
 
 #[post("/download", format = "application/json", data = "<req>")]
 pub async fn download(req: Json<DownloadRequest>) -> ApiResponse {
+    eprintln!("downloading submit source...");
+    let start = std::time::Instant::now();
     if let Err(e) = download_submit_source(&req.0.code_path, &req.0.filename).await {
         return ApiResponse::internal_server_error(e);
     };
+    eprintln!("done. took {:?}", start.elapsed());
 
     ApiResponse::ok(json! {{}})
 }
