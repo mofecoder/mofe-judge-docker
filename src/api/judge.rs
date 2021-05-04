@@ -24,12 +24,15 @@ use std::{
     io::Write,
     path::{Path, PathBuf},
     sync::Arc,
+    time,
 };
 
 #[post("/judge", format = "application/json", data = "<req>")]
 pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {
     let conn = Arc::clone(&conn);
 
+    eprintln!("download and compiling checker...");
+    let start = time::Instant::now();
     if let Err(e) = download_checker(&req.0.problem.checker_path, "checker.cpp").await {
         return ApiResponse::internal_server_error(e);
     }
@@ -43,6 +46,7 @@ pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> Api
         // TODO confirm error message (may not be internal server error)
         Err(e) => return ApiResponse::internal_server_error(e),
     };
+    eprintln!("done. took {:?}", start.elapsed());
 
     let mut submit_result = match try_testcases(&req.0, conn.clone(), &checker_target_path).await {
         Ok(submit_result) => submit_result,
@@ -79,6 +83,8 @@ async fn try_testcases(
     let mut testcase_result_map = HashMap::new();
 
     for testcase in &req.testcases {
+        eprintln!("testing submit code...");
+        let start = time::Instant::now();
         let conn = Arc::clone(&conn);
         let testcase_data = gcp::download_testcase(&req.problem.uuid, &testcase.name).await?;
 
@@ -107,9 +113,16 @@ async fn try_testcases(
         dbg!(&testcase_result);
 
         update_result(&mut submit_result, &testcase_result);
+        update_submit_status(
+            conn.clone(),
+            req.submit_id,
+            &submit_result.status.to_string(),
+        )
+        .await?;
 
         insert_testcase_result(conn, req.submit_id, testcase.testcase_id, &testcase_result).await?;
         testcase_result_map.insert(testcase.testcase_id, testcase_result);
+        eprintln!("done. took {:?}", start.elapsed());
     }
 
     submit_result.testcase_result_map = testcase_result_map;
@@ -121,7 +134,9 @@ async fn try_testcases(
 fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
     let mut updated = false;
 
-    if submit_result.status.to_priority() < testcase_result.status.to_priority() {
+    if submit_result.status != Status::AC
+        && submit_result.status.to_priority() < testcase_result.status.to_priority()
+    {
         submit_result.status = testcase_result.status;
         updated = true;
     }
@@ -198,36 +213,21 @@ async fn insert_testcase_result(
     Ok(())
 }
 
-/*
-async fn get_testcases(problem_id: u64) -> Result<Vec<Testcase>> {
-    let conn = db::new_pool(&CONFIG).await?;
+async fn update_submit_status(conn: Arc<DbPool>, id: i64, status: &str) -> Result<u64> {
+    let conn = Arc::as_ref(&conn);
 
-    let testcases: Vec<Testcase> = sqlx::query_as(
+    let result = sqlx::query!(
         r#"
-        SELECT * FROM testcases
-        WHERE problem_id = ? AND deleted_at IS NULL
+        UPDATE submits 
+        SET
+            status = ? 
+        WHERE
+            id = ? 
         "#,
+        status,
+        id,
     )
-    .bind(problem_id)
-    .fetch_all(&conn)
+    .execute(conn)
     .await?;
-
-    Ok(testcases)
+    Ok(result.rows_affected())
 }
-
-async fn get_problem(problem_id: u64) -> Result<Problem> {
-    let conn = db::new_pool(&CONFIG).await?;
-
-    let problems: Problem = sqlx::query_as(
-        r#"
-        SELECT * FROM problems
-        id = ? AND deleted_at IS NULL
-        "#,
-    )
-    .bind(problem_id)
-    .fetch_one(&conn)
-    .await?;
-
-    Ok(problems)
-}
-*/
