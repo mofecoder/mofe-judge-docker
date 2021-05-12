@@ -113,12 +113,14 @@ async fn try_testcases(
         dbg!(&testcase_result);
 
         update_result(&mut submit_result, &testcase_result);
-        update_submit_status(
-            conn.clone(),
-            req.submit_id,
-            &submit_result.status.to_string(),
-        )
-        .await?;
+        if submit_result.status != Status::AC {
+            update_submit_status(
+                conn.clone(),
+                req.submit_id,
+                &submit_result.status.to_string(),
+            )
+            .await?;
+        }
 
         insert_testcase_result(conn, req.submit_id, testcase.testcase_id, &testcase_result).await?;
         testcase_result_map.insert(testcase.testcase_id, testcase_result);
@@ -134,7 +136,7 @@ async fn try_testcases(
 fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
     let mut updated = false;
 
-    if submit_result.status != Status::AC
+    if testcase_result.status != Status::AC
         && submit_result.status.to_priority() < testcase_result.status.to_priority()
     {
         submit_result.status = testcase_result.status;
