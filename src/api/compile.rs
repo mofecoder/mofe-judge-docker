@@ -1,5 +1,5 @@
 use std::sync::Arc;
-
+use std::process::Command;
 use super::ApiResponse;
 use crate::{
     command::exec_compile_cmd,
@@ -25,13 +25,17 @@ pub async fn compile(req: Json<CompileRequest>, conn: State<'_, Arc<DbPool>>) ->
     if !cmd_res.ok {
         let user_stderr_u8 =
             std::fs::read(&crate::JUDGE_DIR.join("userStderr.txt")).unwrap_or_else(|_| Vec::new());
-        let user_stderr = String::from_utf8_lossy(&user_stderr_u8[..MAX_STDERR_SIZE.min(user_stderr_u8.len())]);
+            let user_stderr = String::from_utf8_lossy(&user_stderr_u8[..MAX_STDERR_SIZE.min(user_stderr_u8.len())]);
+        dbg!(&user_stderr);
         if let Err(e) = send_ce_result(conn, req.submit_id, &user_stderr).await {
             return ApiResponse::internal_server_error(e);
         }
     }
 
     let resp = CompileResponse(cmd_res);
+
+    // 消さないと権限周りのエラーが発生する
+    Command::new("rm").arg("/judge/userStderr.txt").output().unwrap();
 
     ApiResponse::ok(json!(resp))
 }

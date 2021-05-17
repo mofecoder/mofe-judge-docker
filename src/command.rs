@@ -86,9 +86,6 @@ cd /judge
     })
     .await??;
 
-    Command::new("rm").arg("/judge/userStderr.txt").output().await?;
-    
-
     let message = format!(
         "{}{}",
         String::from_utf8_lossy(&output.stdout).to_string(),
