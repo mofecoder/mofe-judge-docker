@@ -1,6 +1,5 @@
-# Ubuntu:20.04(amd64)
-# m1 mac だとハッシュを指定しないと arm64 で build してしまうので・・。
-FROM --platform=linux/amd64 ubuntu:21.04
+# Ubuntu:20.04(amd64)。
+FROM --platform=linux/amd64 ubuntu:20.04
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
@@ -44,7 +43,8 @@ RUN \
 RUN \
     wget https://download.visualstudio.microsoft.com/download/pr/820db713-c9a5-466e-b72a-16f2f5ed00e2/628aa2a75f6aa270e77f4a83b3742fb8/dotnet-sdk-5.0.100-linux-x64.tar.gz \
     && mkdir -p $HOME/dotnet \
-    && tar zxf dotnet-sdk-5.0.100-linux-x64.tar.gz -C $HOME/dotnet
+    && tar zxf dotnet-sdk-5.0.100-linux-x64.tar.gz -C $HOME/dotnet \
+    && rm dotnet-sdk-5.0.100-linux-x64.tar.gz
 ENV DOTNET_ROOT="/root/dotnet"
 ENV PATH="${PATH}:/root/dotnet"
 
@@ -176,7 +176,7 @@ RUN \
     && cp .env /.env \
     && cp service-account-cafecoder.json /service-account-cafecoder.json \
     && cp default.cf /default.cf \
-    && mkdir /temp
+    && rm -rf target/
 
 WORKDIR / 
 
