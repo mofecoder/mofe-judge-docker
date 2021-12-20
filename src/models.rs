@@ -79,7 +79,7 @@ pub struct JudgeResponse {
     pub testcase_result_map: HashMap<i64, TestcaseResult>,
 }
 
-#[allow(clippy::unknown_clippy_lints)]
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq)]
 pub enum Status {
     AC,
@@ -110,9 +110,8 @@ impl fmt::Display for Status {
 }
 
 impl Status {
-    #[allow(dead_code)]
-    pub fn to_priority(&self) -> i32 {
-        match *self {
+    pub fn to_priority(self) -> i32 {
+        match self {
             Status::AC => 1,
             Status::TLE => 2,
             Status::MLE => 3,

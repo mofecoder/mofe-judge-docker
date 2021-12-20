@@ -156,7 +156,6 @@ fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseRe
     updated
 }
 
-#[allow(clippy::clippy::unnecessary_wraps, unused_variables)]
 fn judging(
     cmd_result: &CmdResult,
     time_limit: i32,
