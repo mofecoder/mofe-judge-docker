@@ -161,7 +161,7 @@ RUN \
     && chmod 777 /root \
     && cp /testlib.h /judge/testlib.h
 
-WORKDIR / 
+WORKDIR /
 COPY --from=build /work/target/release/cafecoder-docker-rs app
 COPY --from=build /work/.env .env
 COPY --from=build /work/default.cf default.cf
@@ -170,4 +170,4 @@ COPY --from=build /work/service-account-cafecoder.json service-account-cafecoder
 RUN \
     dotnet -v ; exit 0
 
-ENTRYPOINT ["./cafecoder-docker-rs"]
+ENTRYPOINT ["./app"]
