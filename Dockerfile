@@ -105,9 +105,13 @@ ENV PATH="/root/.nimble/bin:${PATH}"
     
 RUN \
     curl -OL https://cache.ruby-lang.org/pub/ruby/2.7/ruby-2.7.2.tar.gz \
-    && tar xvf ruby-2.7.2.tar.gz -C /root \
-    && rm ruby-2.7.2.tar.gz
-ENV PATH="/root/ruby-2.7.2/bin:${PATH}"
+    && tar xvf ruby-2.7.2.tar.gz \
+    && cd ruby-2.7.2 \
+    && ./configure \
+    && make \
+    && make install \
+    && cd / \
+    && rm ruby-2.7.2.tar.gz && rm -rf ruby-2.7.2
 
 # Kotlin install
 RUN \
