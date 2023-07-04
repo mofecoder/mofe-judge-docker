@@ -7,7 +7,7 @@ pub async fn send_result(conn: Arc<DbPool>, submit_result: &JudgeResponse) -> Re
 
     sqlx::query(
         r#"
-        UPDATE submits
+        UPDATE submissions
         SET
             status = ?
             , execution_time = ?

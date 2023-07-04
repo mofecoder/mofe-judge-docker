@@ -5,7 +5,7 @@ use crate::{
     command::exec_compile_cmd,
     db::DbPool,
     models::{CompileRequest, CompileResponse},
-    MAX_STDERR_SIZE
+    MAX_STDERR_SIZE,
 };
 use anyhow::Result;
 use rocket::State;
@@ -25,7 +25,8 @@ pub async fn compile(req: Json<CompileRequest>, conn: State<'_, Arc<DbPool>>) ->
     if !cmd_res.ok {
         let user_stderr_u8 =
             std::fs::read(&crate::JUDGE_DIR.join("userStderr.txt")).unwrap_or_else(|_| Vec::new());
-        let user_stderr = String::from_utf8_lossy(&user_stderr_u8[..MAX_STDERR_SIZE.min(user_stderr_u8.len())]);
+        let user_stderr =
+            String::from_utf8_lossy(&user_stderr_u8[..MAX_STDERR_SIZE.min(user_stderr_u8.len())]);
         if let Err(e) = send_ce_result(conn, req.submit_id, &user_stderr).await {
             return ApiResponse::internal_server_error(e);
         }
@@ -41,10 +42,10 @@ pub async fn send_ce_result(conn: Arc<DbPool>, submit_id: i64, msg: &str) -> Res
 
     sqlx::query(
         r#"
-        UPDATE submits
+        UPDATE submissions
         SET
             status = 'CE'
-            , compile_error = ? 
+            , compile_error = ?
             , point = 0
             , execution_time = NULL
             , execution_memory = NULL
