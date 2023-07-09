@@ -76,7 +76,7 @@ RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- -y && \
     echo 'export PATH=/root/.nimble/bin:$PATH' >> ~/.profile
 
 # Ruby install
-RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev -y && \
+RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y && \
     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv && \
     echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.profile && \
     echo 'eval "$(rbenv init -)"' >> ~/.profile && \
