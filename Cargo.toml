@@ -16,6 +16,7 @@ serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0"
 sqlx = {version = "0.7.0", features = ["runtime-tokio-rustls", "mysql", "chrono", "json"]}
 tokio = {version = "1.2.0", features = ["full"]}
+openssl = { version = "^0.10.55" }
 openssl-sys = { version = "^0.9.74" }
 cloud-storage = { version = "0.11.1", features = ["sync"] }
 #cafecoder = {git = "https://github.com/cafecoder-dev/cafecoder-rs", branch = "main"}
