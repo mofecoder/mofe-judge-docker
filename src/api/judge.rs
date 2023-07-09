@@ -198,7 +198,7 @@ async fn insert_testcase_result(
 
     sqlx::query(
         r#"
-        INSERT INTO testcase_results (submit_id, testcase_id, status, execution_time, execution_memory, created_at, updated_at)
+        INSERT INTO testcase_results (submission_id, testcase_id, status, execution_time, execution_memory, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
         "#
     )
@@ -220,11 +220,11 @@ async fn update_submit_status(conn: Arc<DbPool>, id: i64, status: &str) -> Resul
 
     let result = sqlx::query!(
         r#"
-        UPDATE submits 
+        UPDATE submissions
         SET
-            status = ? 
+            status = ?
         WHERE
-            id = ? 
+            id = ?
         "#,
         status,
         id,
