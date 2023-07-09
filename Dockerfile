@@ -1,4 +1,4 @@
-FROM debian:stable
+FROM ubuntu:20.04
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
@@ -91,7 +91,7 @@ RUN apt-get install zip unzip -y && \
     sdk install kotlin
 
 # Fortran install
-RUN apt-get install gfortran-10 -y
+RUN apt-get install gfortran -y
 
 # Crystal install
 RUN cd /opt &&  \
