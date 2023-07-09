@@ -14,8 +14,8 @@ rocket = {git = "https://github.com/SergioBenitez/Rocket"}# allow async
 rocket_contrib = {git = "https://github.com/SergioBenitez/Rocket"}# allow async
 serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0"
-sqlx = {version = "0.5.1", features = ["runtime-tokio-rustls", "mysql", "chrono", "json"]}
+sqlx = {version = "0.7.0", features = ["runtime-tokio-rustls", "mysql", "chrono", "json"]}
 tokio = {version = "1.2.0", features = ["full"]}
-cloud-storage = { version = "0.8", features = ["sync"] }
+cloud-storage = { version = "0.11.1", features = ["sync"] }
 #cafecoder = {git = "https://github.com/cafecoder-dev/cafecoder-rs", branch = "main"}
 once_cell = "1.7.0"
