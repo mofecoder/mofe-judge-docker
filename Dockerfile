@@ -42,8 +42,8 @@ RUN apt-get install build-essential -y
 RUN apt-get install default-jdk -y
 
 # Python3 install
-RUN wget -O python.tar.gz https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
-    tar -xzf python.tar.gz && \
+RUN wget -O python.tgz https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
+    tar -xzf python.tgz && \
     cd python && \
     ./configure && \
     make && \
@@ -54,7 +54,8 @@ RUN cd /opt && \
     wget -O pypy3.tar.bz2 https://downloads.python.org/pypy/pypy3.10-v7.3.12-aarch64.tar.bz2 && \
     tar xf pypy3.tar.bz2 && \
     cd /bin && \
-    ln -s /opt/pypy3/bin/pypy3 pypy3
+    ln -s /opt/pypy3/bin/pypy3 pypy3 && \
+    cd
 
 # go install
 RUN wget -O go.tar.gz https://go.dev/dl/go1.20.5.linux-amd64.tar.gz && \
