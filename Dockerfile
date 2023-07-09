@@ -1,6 +1,6 @@
 # Ubuntu:20.04(amd64)
 # m1 mac だとハッシュを指定しないと arm64 で build してしまうので・・。
-FROM ubuntu@sha256:e3d7ff9efd8431d9ef39a144c45992df5502c995b9ba3c53ff70c5b52a848d9c
+FROM ubuntu@sha256:266cbca633bcb1356b9be281efe251782d30830cee0c0cf6a3c952a3a655f040
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
@@ -96,7 +96,11 @@ RUN apt-get install zip unzip -y && \
 RUN apt-get install gfortran-10 -y
 
 # Crystal install
-RUN curl -sSL https://crystal-lang.org/install.sh | bash -s
+RUN cd /opt &&  \
+    wget https://github.com/crystal-lang/crystal/releases/download/1.8.2/crystal-1.8.2-1-linux-x86_64.tar.gz && \
+    tar -xzf crystal-1.8.2-1-linux-x86_64.tar.gz && \
+    ln -s /opt/crystal-1.8.2-1-linux-x86_64/bin/crystal /bin/crystal && \
+    cd
 
 # Perl install
 RUN wget https://www.cpan.org/src/5.0/perl-5.38.0.tar.gz && \
