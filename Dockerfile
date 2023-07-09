@@ -33,7 +33,7 @@ RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/downlo
     echo 'export PATH=$PATH:$HOME/dotnet' >> ~/.profile
 
 # C/C++ install
-RUN apt-get install g++-13 gcc-13 -y
+RUN apt-get install build-essential -y
 
 # Java11 install
 RUN apt-get install default-jdk -y
