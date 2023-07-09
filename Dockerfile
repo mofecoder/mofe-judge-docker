@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:stable
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
