@@ -42,7 +42,7 @@ RUN apt-get install build-essential -y
 RUN apt-get install default-jdk -y
 
 # Python3 install
-RUN wget -O python.tgz https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
+RUN wget https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
     tar xzf Python-3.11.4.tgz && \
     cd Python-3.11.4.tgz && \
     ./configure && \
