@@ -9,7 +9,7 @@ SHELL ["/bin/bash", "-c"]
 
 # install compilers
 RUN \
-    apt update && apt-get install -y \
+    apt-get update && apt-get install -y \
         software-properties-common \
         apt-transport-https \
         dirmngr \
@@ -20,7 +20,10 @@ RUN \
         build-essential \
         sudo \
         unzip \
-        git
+        git \
+        libbz2-dev libdb-dev libreadline-dev libffi-dev  \
+        libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev \
+        libssl-dev zlib1g-dev uuid-dev
 
 # Raku install
 RUN apt-get install -y rakudo
@@ -39,7 +42,12 @@ RUN apt-get install build-essential -y
 RUN apt-get install default-jdk -y
 
 # Python3 install
-RUN apt-get install python3.11 -y
+RUN wget -O python.tar.gz https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
+    tar -xzf python.tar.gz && \
+    cd python && \
+    ./configure && \
+    make && \
+    make install
 
 # PyPy3 install
 RUN cd /opt && \
