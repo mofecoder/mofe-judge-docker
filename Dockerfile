@@ -1,6 +1,4 @@
-# Ubuntu:20.04(amd64)
-# m1 mac だとハッシュを指定しないと arm64 で build してしまうので・・。
-FROM ubuntu@sha256:266cbca633bcb1356b9be281efe251782d30830cee0c0cf6a3c952a3a655f040
+FROM debian:stable
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
@@ -23,7 +21,7 @@ RUN \
         git \
         libbz2-dev libdb-dev libreadline-dev libffi-dev  \
         libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev \
-        libssl-dev zlib1g-dev uuid-dev pkg-config
+        libssl-dev zlib1g-dev uuid-dev pkg-config openssl
 
 # Raku install
 RUN apt-get install -y rakudo
@@ -36,7 +34,7 @@ RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/downlo
     echo 'export PATH=$PATH:$HOME/dotnet' >> ~/.profile
 
 # C/C++ install
-RUN apt-get install build-essential -y
+RUN apt-get install build-essential gcc-12 g++-12 -y
 
 # Java11 install
 RUN apt-get install default-jdk -y
