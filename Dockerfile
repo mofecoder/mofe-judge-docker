@@ -43,8 +43,8 @@ RUN apt-get install default-jdk -y
 
 # Python3 install
 RUN wget -O python.tgz https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
-    tar -C python -xzf python.tgz && \
-    cd python && \
+    tar xzf Python-3.11.4.tgz && \
+    cd Python-3.11.4.tgz && \
     ./configure && \
     make && \
     make install
@@ -52,12 +52,12 @@ RUN wget -O python.tgz https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tg
 # PyPy3 install
 RUN cd /opt && \
     wget -O pypy3.tar.bz2 https://downloads.python.org/pypy/pypy3.10-v7.3.12-aarch64.tar.bz2 && \
-    tar -C pypy3 xf pypy3.tar.bz2 -C pypy3 && \
-    ln -s /opt/pypy3/bin/pypy3 /bin/pypy3
+    tar xf pypy3.10-v7.3.12-aarch64.tar.bz2 && \
+    ln -s /opt/pypy3.10-v7.3.12-aarch64.tar.bz2/bin/pypy3 /bin/pypy3
 
 # go install
-RUN wget -O go.tar.gz https://go.dev/dl/go1.20.5.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go.tar.gz && \
+RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz && \
+    tar -xzf go1.20.5.linux-amd64.tar.gz && \
     echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
 
 ENV USER=$USER
@@ -100,8 +100,8 @@ RUN curl -sSL https://crystal-lang.org/install.sh | bash -s
 
 # Perl install
 RUN wget -O perl.tar.gz https://www.cpan.org/src/5.0/perl-5.38.0.tar.gz && \
-    tar -C perl -xzf perl.tar.gz && \
-    cd perl && \
+    tar -xzf perl-5.38.0.tar.gz && \
+    cd -C perl  && \
     ./Configure -Dprefix=$HOME/perl -Dscriptdir=$HOME/perl/bin -des -Dman1dir=none -Dman3dir=none -DDEBUGGING=-g && \
     make --jobs=8 install
 
