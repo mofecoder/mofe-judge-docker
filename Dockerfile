@@ -51,7 +51,7 @@ RUN wget https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
 
 # PyPy3 install
 RUN cd /opt && \
-    wget -O pypy3.tar.bz2 https://downloads.python.org/pypy/pypy3.10-v7.3.12-aarch64.tar.bz2 && \
+    wget https://downloads.python.org/pypy/pypy3.10-v7.3.12-aarch64.tar.bz2 && \
     tar xf pypy3.10-v7.3.12-aarch64.tar.bz2 && \
     ln -s /opt/pypy3.10-v7.3.12-aarch64/bin/pypy3 /bin/pypy3
 
@@ -99,7 +99,7 @@ RUN apt-get install gfortran-10 -y
 RUN curl -sSL https://crystal-lang.org/install.sh | bash -s
 
 # Perl install
-RUN wget -O perl.tar.gz https://www.cpan.org/src/5.0/perl-5.38.0.tar.gz && \
+RUN wget https://www.cpan.org/src/5.0/perl-5.38.0.tar.gz && \
     tar -xzf perl-5.38.0.tar.gz && \
     cd perl-5.38.0  && \
     ./Configure -Dprefix=$HOME/perl -Dscriptdir=$HOME/perl/bin -des -Dman1dir=none -Dman3dir=none -DDEBUGGING=-g && \
