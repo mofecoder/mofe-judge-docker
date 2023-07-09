@@ -1,4 +1,4 @@
-FROM debian:stable
+FROM debian:bullseye
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
