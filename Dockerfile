@@ -8,7 +8,6 @@ COPY Cargo.toml .
 COPY src ./src
 RUN cargo fetch
 RUN cargo build --release
-RUN cargo clean
 
 FROM debian:stable
 
