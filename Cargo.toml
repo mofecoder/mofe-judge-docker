@@ -2,19 +2,19 @@
 name = "cafecoder-docker-rs"
 version = "0.1.0"
 authors = ["earlgray <earlgray283@gmail.com>", "kichi2004 <mail@kichi2004.jp>"]
-edition = "2018"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 anyhow = "1.0"
 chrono = {version = "0.4", features = ["serde"]}
-dotenv = "0.15.0"
+dotenv = "0.15"
 rocket = {version = "0.5.0-rc.3", features = ["json"]}
 serde = {version = "1.0", features = ["derive"]}
 serde_json = "1.0"
-sqlx = {version = "0.7.0", features = ["runtime-tokio", "mysql", "chrono", "json"]}
-tokio = {version = "1.2.0", features = ["full"]}
+sqlx = {version = "0.7.1", features = ["runtime-tokio", "mysql", "chrono", "json"]}
+tokio = {version = "1.29.1", features = ["full"]}
 #cafecoder = {git = "https://github.com/cafecoder-dev/cafecoder-rs", branch = "main"}
 once_cell = "1.18.0"
 google-cloud-storage = "0.13.0"
