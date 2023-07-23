@@ -61,13 +61,13 @@ RUN wget https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
 
 # PyPy3 install
 RUN cd /opt && \
-    wget https://downloads.python.org/pypy/pypy3.10-v7.3.12-aarch64.tar.bz2 && \
-    tar xf pypy3.10-v7.3.12-aarch64.tar.bz2 && \
-    ln -s /opt/pypy3.10-v7.3.12-aarch64/bin/pypy3 /bin/pypy3
+    wget https://downloads.python.org/pypy/pypy3.10-v7.3.12-linux64.tar.bz2 && \
+    tar xf pypy3.10-v7.3.12-linux64.tar.bz2 && \
+    ln -s /opt/pypy3.10-v7.3.12-linux64/bin/pypy3 /bin/pypy3
 
 # go install
-RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz && \
-    tar -xzf go1.20.5.linux-amd64.tar.gz && \
+RUN wget https://go.dev/dl/go1.20.6.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.20.6.linux-amd64.tar.gz && \
     echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
 ENV PATH $PATH:/usr/local/go/bin
 
@@ -96,7 +96,7 @@ RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y
     bash -c exec $SHELL -l && \
     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build && \
     export PATH="$HOME/.rbenv/bin:$PATH" && rbenv install 3.2.2 && rbenv global 3.2.2
-ENV PATH $PATH:/root/.rbenv/bin
+ENV PATH $PATH:/root/.rbenv/bin:/root/.rbenv/shims
 
 # Kotlin install
 RUN apt-get install zip unzip -y --no-install-recommends && \
@@ -114,7 +114,7 @@ RUN apt-get install gfortran -y --no-install-recommends
 RUN cd /opt &&  \
     wget https://github.com/crystal-lang/crystal/releases/download/1.8.2/crystal-1.8.2-1-linux-x86_64.tar.gz && \
     tar -xzf crystal-1.8.2-1-linux-x86_64.tar.gz && \
-    ln -s /opt/crystal-1.8.2-1-linux-x86_64/bin/crystal /bin/crystal && \
+    ln -s /opt/crystal-1.8.2-1-linux/bin/crystal /bin/crystal && \
     cd
 
 # Perl install
