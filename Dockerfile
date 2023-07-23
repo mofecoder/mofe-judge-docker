@@ -6,14 +6,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && apt-get upgrade -y
+RUN apt-get install -y curl
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 
 COPY . /cafecoder-docker-rust
 RUN cd cafecoder-docker-rust && \
-    source $HOME/.cargo/env && \
-    cargo build --release && \
-    cp target/release/cafecoder-docker-rs / && \
+    source $HOME/.cargo/env \
+RUN cargo build --release \
+RUN cp target/release/cafecoder-docker-rs / && \
     cp .env / && \
     cp service-account-cafecoder.json / && \
     cp default.cf / && \
