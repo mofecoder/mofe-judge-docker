@@ -1,12 +1,12 @@
 FROM rust:slim as builder
 
 WORKDIR /work
+RUN apt-get update && apt-get install -y libssl-dev pkg-config
 COPY .env .
 COPY Cargo.lock .
 COPY Cargo.toml .
-COPY src ./src
-RUN apt-get update && apt-get install -y libssl-dev pkg-config
 RUN cargo fetch
+COPY src ./src
 RUN cargo build --release
 RUN cargo clean
 
