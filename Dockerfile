@@ -1,4 +1,4 @@
-FROM rust:slim as builder
+FROM rust:slim-bookworm as builder
 
 WORKDIR /work
 RUN apt-get update && apt-get install -y libssl-dev pkg-config
@@ -9,7 +9,7 @@ COPY src ./src
 RUN cargo fetch
 RUN cargo build --release
 
-FROM debian:stable
+FROM debian:bookworm
 
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
