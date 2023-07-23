@@ -14,6 +14,8 @@ COPY . /cafecoder-docker-rust
 RUN cd cafecoder-docker-rust && \
     source $HOME/.cargo/env \
 RUN cargo build --release \
+
+WORKDIR /
 RUN cp target/release/cafecoder-docker-rs / && \
     cp .env / && \
     cp service-account-cafecoder.json / && \
