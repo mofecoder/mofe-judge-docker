@@ -2,19 +2,18 @@ mod scoring;
 mod sender;
 
 use super::ApiResponse;
+use crate::gcp::GcpClient;
 use crate::{
     checker::{compile_checker, run_checker},
     command::*,
     db::DbPool,
-    gcp,
     models::*,
     MAX_FILE_SIZE,
 };
 use anyhow::Result;
 use chrono::prelude::*;
-use gcp::download_checker;
+use rocket::serde::json::{json, Json};
 use rocket::State;
-use rocket_contrib::{json, json::Json};
 use scoring::scoring;
 use sender::send_result;
 use std::{
@@ -28,12 +27,19 @@ use std::{
 };
 
 #[post("/judge", format = "application/json", data = "<req>")]
-pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {
+pub async fn judge(
+    req: Json<JudgeRequest>,
+    conn: &State<Arc<DbPool>>,
+    gcp: &State<Arc<GcpClient>>,
+) -> ApiResponse {
     let conn = Arc::clone(&conn);
 
     eprintln!("download and compiling checker...");
     let start = time::Instant::now();
-    if let Err(e) = download_checker(&req.0.problem.checker_path, "checker.cpp").await {
+    if let Err(e) = gcp
+        .download_checker(&req.0.problem.checker_path, "checker.cpp")
+        .await
+    {
         return ApiResponse::internal_server_error(e);
     }
 
@@ -48,10 +54,11 @@ pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> Api
     };
     eprintln!("done. took {:?}", start.elapsed());
 
-    let mut submit_result = match try_testcases(&req.0, conn.clone(), &checker_target_path).await {
-        Ok(submit_result) => submit_result,
-        Err(e) => return ApiResponse::internal_server_error(e),
-    };
+    let mut submit_result =
+        match try_testcases(&req.0, conn.clone(), (*gcp).clone(), &checker_target_path).await {
+            Ok(submit_result) => submit_result,
+            Err(e) => return ApiResponse::internal_server_error(e),
+        };
 
     dbg!(&submit_result);
 
@@ -70,6 +77,7 @@ pub async fn judge(req: Json<JudgeRequest>, conn: State<'_, Arc<DbPool>>) -> Api
 async fn try_testcases(
     req: &JudgeRequest,
     conn: Arc<DbPool>,
+    gcp: Arc<GcpClient>,
     checker_path: &Path,
 ) -> Result<JudgeResponse> {
     let mut submit_result = JudgeResponse {
@@ -86,7 +94,9 @@ async fn try_testcases(
         eprintln!("testing submit code...");
         let start = time::Instant::now();
         let conn = Arc::clone(&conn);
-        let testcase_data = gcp::download_testcase(&req.problem.uuid, &testcase.name).await?;
+        let testcase_data = gcp
+            .download_testcase(&req.problem.uuid, &testcase.name)
+            .await?;
 
         let mut file = File::create(&crate::JUDGE_DIR.join("testcase.txt"))?;
         file.write_all(&testcase_data.0)?;

@@ -1,3 +1,3 @@
 /target
 /.env
-/service-account-cafecoder.json
+/service-account*.json

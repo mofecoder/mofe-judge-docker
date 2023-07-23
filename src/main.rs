@@ -13,11 +13,11 @@ mod sandbox;
 #[macro_use]
 extern crate rocket;
 
-use anyhow::Result;
-use api::{compile::compile, download::download, judge::judge};
+use crate::gcp::GcpClient;
 use config::Config;
+use google_cloud_storage::client::{Client, ClientConfig};
 use once_cell::sync::Lazy;
-use std::{net::Ipv4Addr, sync::Arc};
+use std::sync::Arc;
 
 static CONFIG: Lazy<Config> = Lazy::new(|| config::load_config().unwrap());
 
@@ -29,23 +29,26 @@ const MAX_STDERR_SIZE: usize = 5_000; // 5KB
 static JUDGE_DIR: Lazy<std::path::PathBuf> =
     Lazy::new(|| std::env::current_dir().unwrap().join("judge"));
 
-#[rocket::main]
-async fn main() -> Result<()> {
+#[launch]
+async fn rocket() -> _ {
     let conn = {
-        let pool = db::new_pool(&CONFIG).await?;
+        let pool = db::new_pool(&*CONFIG).await.unwrap();
         Arc::new(pool)
     };
 
-    use rocket::config::Config;
-    let rocket_config = Config::figment()
-        .merge(("port", 8000))
-        .merge(("address",Ipv4Addr::new(0, 0, 0, 0)));
+    let client = Client::new(ClientConfig::default().with_auth().await.unwrap());
 
-    rocket::custom(rocket_config)
+    let gcp_client = GcpClient::new(client).await.unwrap();
+
+    rocket::build()
         .manage(conn)
-        .mount("/", routes![judge, download, compile])
-        .launch()
-        .await?;
-
-    Ok(())
+        .manage(Arc::new(gcp_client))
+        .mount(
+            "/",
+            routes![
+                api::judge::judge,
+                api::download::download,
+                api::compile::compile
+            ],
+        )
 }

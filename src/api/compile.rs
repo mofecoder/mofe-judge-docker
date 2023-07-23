@@ -8,13 +8,12 @@ use crate::{
     MAX_STDERR_SIZE,
 };
 use anyhow::Result;
+use rocket::serde::json::{json, Json};
 use rocket::State;
-use rocket_contrib::{json, json::Json};
 
 #[post("/compile", format = "application/json", data = "<req>")]
-pub async fn compile(req: Json<CompileRequest>, conn: State<'_, Arc<DbPool>>) -> ApiResponse {
-    let conn = Arc::clone(&conn);
-
+pub async fn compile(req: Json<CompileRequest>, conn: &State<Arc<DbPool>>) -> ApiResponse {
+    let conn = conn.clone();
     let cmd_res = match exec_compile_cmd(&req.cmd, 20).await {
         Ok(cmd_res) => cmd_res,
         Err(e) => return ApiResponse::internal_server_error(e),
@@ -27,7 +26,7 @@ pub async fn compile(req: Json<CompileRequest>, conn: State<'_, Arc<DbPool>>) ->
             std::fs::read(&crate::JUDGE_DIR.join("userStderr.txt")).unwrap_or_else(|_| Vec::new());
         let user_stderr =
             String::from_utf8_lossy(&user_stderr_u8[..MAX_STDERR_SIZE.min(user_stderr_u8.len())]);
-        if let Err(e) = send_ce_result(conn, req.submit_id, &user_stderr).await {
+        if let Err(e) = send_ce_result((*conn).clone(), req.submit_id, &user_stderr).await {
             return ApiResponse::internal_server_error(e);
         }
     }

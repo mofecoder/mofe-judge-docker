@@ -8,8 +8,8 @@ use rocket::{
     request::Request,
     response,
     response::{Responder, Response},
+    serde::json::{json, Value as JsonValue},
 };
-use rocket_contrib::{json, json::JsonValue};
 
 pub struct ApiResponse {
     status: Status,
