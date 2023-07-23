@@ -153,7 +153,7 @@ RUN cp /testlib.h /judge/testlib.h
 
 WORKDIR /
 
-COPY --from=builder /work/target/release/cafecoder-docker-rs app
+COPY --from=builder /work/target/release/work app
 COPY --from=builder /work/.env .env
 COPY --from=builder /work/service-account-cafecoder.json service-account-cafecoder.json
 COPY --from=builder /work/default.cf default.cf
