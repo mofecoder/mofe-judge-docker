@@ -1,26 +1,8 @@
-FROM debian:stable as builder
+FROM rust:slim as builder
 
-ENV TZ Asia/Tokyo
-ENV DEBIAN_FRONTEND=noninteractive
-
-SHELL ["/bin/bash", "-c"]
-
-RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y curl
-
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-
-COPY . /cafecoder-docker-rust
-RUN cd cafecoder-docker-rust && \
-    source $HOME/.cargo/env \
-RUN cargo build --release \
-
-WORKDIR /
-RUN cp target/release/cafecoder-docker-rs / && \
-    cp .env / && \
-    cp service-account-cafecoder.json / && \
-    cp default.cf / && \
-    mkdir /temp
+WORKDIR /work
+COPY . /work
+RUN cargo build --release && cargo clean
 
 FROM debian:stable
 
@@ -31,7 +13,7 @@ SHELL ["/bin/bash", "-c"]
 
 # install compilers
 RUN \
-    apt-get update && apt-get install -y \
+    apt-get update && apt-get install -y --no-install-recommends \
         software-properties-common \
         apt-transport-https \
         dirmngr \
@@ -45,7 +27,9 @@ RUN \
         git \
         libbz2-dev libdb-dev libreadline-dev libffi-dev  \
         libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev \
-        libssl-dev zlib1g-dev uuid-dev pkg-config openssl
+        libssl-dev zlib1g-dev uuid-dev pkg-config openssl \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Raku install
 RUN apt-get install -y rakudo
@@ -85,13 +69,13 @@ RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz && \
 ENV USER=$USER
 
 # Rust install
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y && \
-    source $HOME/.cargo/env && \
-    cargo new rust_workspace && \
-    cd rust_workspace &&\
-    wget https://raw.githubusercontent.com/cafecoder-dev/language-update/23.07/Rust/Cargo.toml -O Cargo.toml && \
-    cargo build --release && \
-    cd /
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+RUN \
+    mkdir -p /judge \
+    && cd judge \
+    && cargo new --bin rust_workspace && cd rust_workspace \
+    && curl -OL https://raw.githubusercontent.com/cafecoder-dev/language-update/23.07/Rust/Cargo.toml \
+    && cargo build --release
 
 # Nim install
 RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- -y && \
@@ -139,6 +123,9 @@ RUN \
     wget https://raw.githubusercontent.com/MikeMirzayanov/testlib/master/testlib.h && \
     wget https://github.com/atcoder/ac-library/releases/download/v1.4/ac-library.zip && unzip ac-library.zip
 
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# install isolate
 RUN \
     apt-get install libcap-dev && \
     git clone https://github.com/ioi/isolate.git /isolate
@@ -156,6 +143,7 @@ ENV PATH $PATH:/root/.nimble/bin
 ENV PATH $PATH:$HOME/.rbenv/bin
 ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
 
+ENV DOWNLOAD_ROOT=/download
 RUN mkdir /judge
 RUN mkdir /download
 RUN mkdir /box
@@ -164,21 +152,13 @@ RUN mkdir -p /judge/Main && chmod -R 777 /judge
 RUN chmod 777 /root
 RUN cp /testlib.h /judge/testlib.h
 
-#RUN mkdir -p /cafecoder-docker-rust/src
-#COPY dummy.rs /cafecoder-docker-rust/src/main.rs
-#COPY Cargo.toml /cafecoder-docker-rust
-#COPY Cargo.lock /cafecoder-docker-rust
-#COPY .env /cafecoder-docker-rust
-#COPY service-account-cafecoder.json /cafecoder-docker-rust
-#COPY default.cf /cafecoder-docker-rust
-#COPY service-account-cafecoder.json /cafecoder-docker-rust
-#RUN cd cafecoder-docker-rust && source $HOME/.cargo/env && cargo build --release
-
-#COPY src/ /cafecoder-docker-rust/src
-
 WORKDIR /
-COPY --from=builder /cafecoder-docker-rs .
+
+COPY --from=builder /work/target/release/cafecoder-docker-rs app
+COPY --from=builder /work/.env .env
+COPY --from=builder /work/service-account-cafecoder.json service-account-cafecoder.json
+COPY --from=builder /work/default.cf default.cf
 
 RUN source $HOME/.profile && dotnet -v ; exit 0
 
-ENTRYPOINT ["./cafecoder-docker-rs"]
+ENTRYPOINT ["./app"]
