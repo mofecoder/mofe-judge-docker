@@ -4,7 +4,7 @@ WORKDIR /work
 COPY . /work
 RUN apt-get update && apt-get install -y libssl-dev pkg-config
 RUN cargo fetch
-RUN cargo build --release \
+RUN cargo build --release
 RUN cargo clean
 
 FROM debian:stable
