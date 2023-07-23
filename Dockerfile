@@ -1,7 +1,10 @@
 FROM rust:slim as builder
 
 WORKDIR /work
-COPY . /work
+COPY .env .
+COPY Cargo.lock .
+COPY Cargo.toml .
+COPY src ./src
 RUN apt-get update && apt-get install -y libssl-dev pkg-config
 RUN cargo fetch
 RUN cargo build --release
@@ -153,10 +156,11 @@ RUN cp /testlib.h /judge/testlib.h
 
 WORKDIR /
 
-COPY --from=builder /work/target/release/work app
+COPY service-account-cafecoder.json .
+COPY default.cf .
+COPY Rocket.toml .
+COPY --from=builder /work/target/release/cafecoder-docker-rs app
 COPY --from=builder /work/.env .env
-COPY --from=builder /work/service-account-cafecoder.json service-account-cafecoder.json
-COPY --from=builder /work/default.cf default.cf
 
 RUN source $HOME/.profile && dotnet -v ; exit 0
 
