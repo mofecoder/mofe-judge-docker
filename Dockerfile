@@ -2,6 +2,7 @@ FROM rust:slim as builder
 
 WORKDIR /work
 COPY . /work
+RUN apt-get update && apt-get install -y libssl-dev pkg-config
 RUN cargo build --release && cargo clean
 
 FROM debian:stable
