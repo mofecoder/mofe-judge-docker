@@ -148,7 +148,6 @@ ENV DOTNET_ROOT=$HOME/dotnet
 ENV DOWNLOAD_ROOT=/download
 RUN mkdir /download
 RUN mkdir /box
-RUN mv /rust_workspace /judge
 RUN mkdir -p /judge/Main && chmod -R 777 /judge
 RUN chmod 777 /root
 RUN cp /testlib.h /judge/testlib.h
