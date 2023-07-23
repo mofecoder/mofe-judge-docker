@@ -114,7 +114,7 @@ RUN apt-get install gfortran -y --no-install-recommends
 RUN cd /opt &&  \
     wget https://github.com/crystal-lang/crystal/releases/download/1.8.2/crystal-1.8.2-1-linux-x86_64.tar.gz && \
     tar -xzf crystal-1.8.2-1-linux-x86_64.tar.gz && \
-    ln -s /opt/crystal-1.8.2-1-linux/bin/crystal /bin/crystal && \
+    ln -s /opt/crystal-1.8.2-1/bin/crystal /bin/crystal && \
     cd
 
 # Perl install
