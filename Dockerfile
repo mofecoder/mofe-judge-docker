@@ -71,6 +71,7 @@ ENV USER=$USER
 
 # Rust install
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH $PATH:$HOME/.cargo/bin
 RUN \
     mkdir -p /judge \
     && cd judge \
@@ -137,7 +138,6 @@ ENV DOWNLOAD_ROOT=/download
 ENV DOTNET_ROOT=$HOME/dotnet
 ENV PATH $PATH:$HOME/dotnet
 ENV PATH $PATH:/usr/local/go/bin
-ENV PATH $PATH:$HOME/.cargo/bin
 ENV PATH $PATH:/root/.nimble/bin
 ENV PATH $PATH:$HOME/.rbenv/bin
 ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
