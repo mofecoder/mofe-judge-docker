@@ -146,7 +146,6 @@ ENV DOWNLOAD_ROOT=/download
 ENV DOTNET_ROOT=$HOME/dotnet
 
 ENV DOWNLOAD_ROOT=/download
-RUN mkdir /judge
 RUN mkdir /download
 RUN mkdir /box
 RUN mv /rust_workspace /judge
