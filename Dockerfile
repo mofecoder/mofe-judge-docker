@@ -31,7 +31,7 @@ RUN \
         libssl-dev zlib1g-dev uuid-dev pkg-config openssl
 
 # Raku install
-RUN apt-get install -y rakudo
+RUN apt-get install -y rakudo --no-install-recommends
 
 # C#(.NET) install
 
@@ -41,10 +41,10 @@ RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/downlo
     echo 'export PATH=$PATH:$HOME/dotnet' >> ~/.profile
 
 # C/C++ install
-RUN apt-get install build-essential gcc-12 g++-12 -y
+RUN apt-get install build-essential gcc-12 g++-12 -y --no-install-recommends
 
 # Java11 install
-RUN apt-get install default-jdk -y
+RUN apt-get install openjdk-17-jdk -y --no-install-recommends
 
 # Python3 install
 RUN wget https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
@@ -81,7 +81,7 @@ RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- -y && \
     echo 'export PATH=/root/.nimble/bin:$PATH' >> ~/.profile
 
 # Ruby install
-RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y && \
+RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y --no-install-recommends && \
     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv && \
     echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.profile && \
     echo 'eval "$(rbenv init -)"' >> ~/.profile && \
@@ -90,7 +90,7 @@ RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y
     export PATH="$HOME/.rbenv/bin:$PATH" && rbenv install 3.2.2 && rbenv global 3.2.2
 
 # Kotlin install
-RUN apt-get install zip unzip -y && \
+RUN apt-get install zip unzip -y --no-install-recommends && \
     curl -s https://get.sdkman.io | bash && \
     bash && \
     echo 'source "/root/.sdkman/bin/sdkman-init.sh"' >> ~/.profile && \
@@ -98,7 +98,7 @@ RUN apt-get install zip unzip -y && \
     sdk install kotlin
 
 # Fortran install
-RUN apt-get install gfortran -y
+RUN apt-get install gfortran -y --no-install-recommends
 
 # Crystal install
 RUN cd /opt &&  \
@@ -115,18 +115,16 @@ RUN wget https://www.cpan.org/src/5.0/perl-5.38.0.tar.gz && \
     make --jobs=8 install
 
 # dc install
-RUN apt-get install dc -y
+RUN apt-get install dc -y --no-install-recommends
 
 # install external libraries
 RUN \
     wget https://raw.githubusercontent.com/MikeMirzayanov/testlib/master/testlib.h && \
     wget https://github.com/atcoder/ac-library/releases/download/v1.4/ac-library.zip && unzip ac-library.zip
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
 # install isolate
 RUN \
-    apt-get install libcap-dev && \
+    apt-get install libcap-dev --no-install-recommends && \
     git clone https://github.com/ioi/isolate.git /isolate
 COPY ./default.cf /isolate/default.cf
 RUN cd /isolate && make install
