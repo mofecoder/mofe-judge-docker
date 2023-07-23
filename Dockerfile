@@ -3,6 +3,8 @@ FROM debian:stable as builder
 ENV TZ Asia/Tokyo
 ENV DEBIAN_FRONTEND=noninteractive
 
+SHELL ["/bin/bash", "-c"]
+
 RUN apt-get update && apt-get upgrade -y
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
