@@ -1,3 +1,22 @@
+FROM debian:stable as builder
+
+ENV TZ Asia/Tokyo
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get upgrade -y
+
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+COPY . /cafecoder-docker-rust
+RUN cd cafecoder-docker-rust && \
+    source $HOME/.cargo/env && \
+    cargo build --release && \
+    cp target/release/cafecoder-docker-rs / && \
+    cp .env / && \
+    cp service-account-cafecoder.json / && \
+    cp default.cf / && \
+    mkdir /temp
+
 FROM debian:stable
 
 ENV TZ Asia/Tokyo
@@ -151,17 +170,9 @@ RUN cp /testlib.h /judge/testlib.h
 #RUN cd cafecoder-docker-rust && source $HOME/.cargo/env && cargo build --release
 
 #COPY src/ /cafecoder-docker-rust/src
-COPY . /cafecoder-docker-rust
-RUN cd cafecoder-docker-rust && \
-    source $HOME/.cargo/env && \
-    cargo build --release && \
-    cp target/release/cafecoder-docker-rs / && \
-    cp .env / && \
-    cp service-account-cafecoder.json / && \
-    cp default.cf / && \
-    mkdir /temp
 
 WORKDIR /
+COPY --from=builder /cafecoder-docker-rs .
 
 RUN source $HOME/.profile && dotnet -v ; exit 0
 
