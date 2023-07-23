@@ -3,7 +3,9 @@ FROM rust:slim as builder
 WORKDIR /work
 COPY . /work
 RUN apt-get update && apt-get install -y libssl-dev pkg-config
-RUN cargo build --release && cargo clean
+RUN cargo fetch
+RUN cargo build --release \
+RUN cargo clean
 
 FROM debian:stable
 
@@ -43,7 +45,7 @@ RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/downlo
 # C/C++ install
 RUN apt-get install build-essential gcc-12 g++-12 -y --no-install-recommends
 
-# Java11 install
+# Java install
 RUN apt-get install openjdk-17-jdk -y --no-install-recommends
 
 # Python3 install
