@@ -27,7 +27,7 @@ RUN \
         git \
         libbz2-dev libdb-dev libreadline-dev libffi-dev  \
         libgdbm-dev liblzma-dev libncursesw5-dev libsqlite3-dev \
-        libssl-dev zlib1g-dev uuid-dev pkg-config openssl \
+        libssl-dev zlib1g-dev uuid-dev pkg-config openssl
 
 # Raku install
 RUN apt-get install -y rakudo
