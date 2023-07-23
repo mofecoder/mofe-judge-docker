@@ -5,8 +5,8 @@ RUN apt-get update && apt-get install -y libssl-dev pkg-config
 COPY .env .
 COPY Cargo.lock .
 COPY Cargo.toml .
-RUN cargo fetch
 COPY src ./src
+RUN cargo fetch
 RUN cargo build --release
 RUN cargo clean
 
