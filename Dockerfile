@@ -161,4 +161,5 @@ COPY --from=builder /work/.env .env
 
 RUN source $HOME/.profile && dotnet -v ; exit 0
 
+ENV LD_LIBRARY_PATH /root/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/
 ENTRYPOINT ["./app"]
