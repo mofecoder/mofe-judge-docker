@@ -40,8 +40,8 @@ RUN apt-get install -y rakudo --no-install-recommends
 RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/download/pr/87a55ae3-917d-449e-a4e8-776f82976e91/03380e598c326c2f9465d262c6a88c45/dotnet-sdk-7.0.305-linux-x64.tar.gz && \
     mkdir -p $HOME/dotnet && tar zxf dotnet-sdk.tar.gz -C $HOME/dotnet && \
     echo 'export DOTNET_ROOT=$HOME/dotnet' >> ~/.profile && \
-    echo 'export PATH=$PATH:$HOME/dotnet' >> ~/.profile
-ENV PATH $PATH:$HOME/dotnet
+    echo 'export PATH=$PATH:/root/dotnet' >> ~/.profile
+ENV PATH $PATH:/root/dotnet
 
 # C/C++ install
 RUN apt-get install build-essential gcc-12 g++-12 -y --no-install-recommends
@@ -73,7 +73,7 @@ ENV USER=$USER
 
 # Rust install
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-ENV PATH $PATH:$HOME/.cargo/bin
+ENV PATH $PATH:/root/.cargo/bin
 RUN \
     mkdir -p /judge \
     && cd judge \
@@ -94,7 +94,7 @@ RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y
     bash -c exec $SHELL -l && \
     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build && \
     export PATH="$HOME/.rbenv/bin:$PATH" && rbenv install 3.2.2 && rbenv global 3.2.2
-ENV PATH $PATH:$HOME/.rbenv/bin
+ENV PATH $PATH:/root/.rbenv/bin
 
 # Kotlin install
 RUN apt-get install zip unzip -y --no-install-recommends && \
