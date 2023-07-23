@@ -41,6 +41,7 @@ RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/downlo
     mkdir -p $HOME/dotnet && tar zxf dotnet-sdk.tar.gz -C $HOME/dotnet && \
     echo 'export DOTNET_ROOT=$HOME/dotnet' >> ~/.profile && \
     echo 'export PATH=$PATH:$HOME/dotnet' >> ~/.profile
+ENV PATH $PATH:$HOME/dotnet
 
 # C/C++ install
 RUN apt-get install build-essential gcc-12 g++-12 -y --no-install-recommends
@@ -66,6 +67,7 @@ RUN cd /opt && \
 RUN wget https://go.dev/dl/go1.20.5.linux-amd64.tar.gz && \
     tar -xzf go1.20.5.linux-amd64.tar.gz && \
     echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+ENV PATH $PATH:/usr/local/go/bin
 
 ENV USER=$USER
 
@@ -82,6 +84,7 @@ RUN \
 # Nim install
 RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- -y && \
     echo 'export PATH=/root/.nimble/bin:$PATH' >> ~/.profile
+ENV PATH $PATH:/root/.nimble/bin
 
 # Ruby install
 RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y --no-install-recommends && \
@@ -91,6 +94,7 @@ RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y
     bash -c exec $SHELL -l && \
     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build && \
     export PATH="$HOME/.rbenv/bin:$PATH" && rbenv install 3.2.2 && rbenv global 3.2.2
+ENV PATH $PATH:$HOME/.rbenv/bin
 
 # Kotlin install
 RUN apt-get install zip unzip -y --no-install-recommends && \
@@ -99,6 +103,7 @@ RUN apt-get install zip unzip -y --no-install-recommends && \
     echo 'source "/root/.sdkman/bin/sdkman-init.sh"' >> ~/.profile && \
     source ~/.profile && \
     sdk install kotlin
+ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
 
 # Fortran install
 RUN apt-get install gfortran -y --no-install-recommends
@@ -136,11 +141,6 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV DOWNLOAD_ROOT=/download
 ENV DOTNET_ROOT=$HOME/dotnet
-ENV PATH $PATH:$HOME/dotnet
-ENV PATH $PATH:/usr/local/go/bin
-ENV PATH $PATH:/root/.nimble/bin
-ENV PATH $PATH:$HOME/.rbenv/bin
-ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
 
 ENV DOWNLOAD_ROOT=/download
 RUN mkdir /judge
