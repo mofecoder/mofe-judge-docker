@@ -8,8 +8,7 @@ COPY Cargo.toml .
 COPY src ./src
 RUN cargo fetch
 
-ARG BUILD_TARGET=release
-RUN cargo build --${BUILD_TARGET}
+RUN cargo build --release
 
 FROM debian:bookworm
 
@@ -158,7 +157,7 @@ WORKDIR /
 COPY service-account-cafecoder.json .
 COPY default.cf .
 COPY Rocket.toml .
-COPY --from=builder /work/target/${BUILD_TARGET}/cafecoder-docker-rs app
+COPY --from=builder /work/target/release/cafecoder-docker-rs app
 COPY --from=builder /work/.env .env
 
 RUN source $HOME/.profile && dotnet -v ; exit 0
