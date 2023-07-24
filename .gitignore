@@ -1,3 +1,5 @@
 /target
 /.env
 /service-account-cafecoder.json
+.DS_Store
+/.vscode

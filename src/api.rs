@@ -18,7 +18,7 @@ pub struct ApiResponse {
 
 impl<'r> Responder<'r, 'static> for ApiResponse {
     fn respond_to(self, req: &'r Request<'_>) -> response::Result<'static> {
-        Response::build_from(self.json.respond_to(&req).unwrap())
+        Response::build_from(self.json.respond_to(req).unwrap())
             .status(self.status)
             .header(ContentType::JSON)
             .ok()
