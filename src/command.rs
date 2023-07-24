@@ -52,7 +52,7 @@ cd /judge
 
     Ok(CmdResult {
         ok: meta.exitcode == Some(0),
-        execution_time: (meta.time.unwrap_or(0.0) * 1000.0).floor() as i32,
+        execution_time: (meta.time_wall.unwrap_or(0.0) * 1000.0).floor() as i32,
         stdout_size: message.len(),
         message,
         execution_memory: meta.cg_mem.unwrap_or(0) as i32,
