@@ -5,3 +5,8 @@ services:
     build: .
     image: cafecoder_docker:2307
     privileged: true
+    env_file: .env
+    volumes:
+      - type: bind
+        source: ./service-account-cafecoder.json
+        target: /service-account.json

@@ -45,6 +45,7 @@ RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/downlo
 ENV PATH $PATH:/root/dotnet
 ENV DOTNET_ROOT /root/dotnet
 ENV DOTNET_EnableWriteXorExecute 0
+ENV COMPlus_EnableDiagnostics 0
 RUN cd /judge && \
     curl -L https://raw.githubusercontent.com/cafecoder-dev/language-update/23.07/CSharp/Main.csproj -o Main.csproj && \
     echo 'Console.WriteLine();' > Main.cs && \
@@ -153,7 +154,8 @@ RUN wget https://www.cpan.org/src/5.0/perl-5.38.0.tar.gz && \
 RUN apt-get install dc -y --no-install-recommends
 
 # install testlib
-RUN wget https://raw.githubusercontent.com/MikeMirzayanov/testlib/master/testlib.h
+RUN mkdir /opt/testlib && \
+    wget -P /opt/testlib https://raw.githubusercontent.com/MikeMirzayanov/testlib/master/testlib.h
 
 # install isolate
 RUN \
@@ -162,7 +164,7 @@ RUN \
 COPY ./default.cf /isolate/default.cf
 RUN cd /isolate && make install
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /tmp
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* && rm -rf /tmp && mkdir /tmp
 
 ENV DOWNLOAD_ROOT=/download
 ENV DOTNET_ROOT=$HOME/dotnet
@@ -172,15 +174,12 @@ RUN mkdir /download
 RUN mkdir /box
 RUN mkdir -p /judge/Main && chmod -R 777 /judge
 RUN chmod 777 /root
-RUN cp /testlib.h /judge/testlib.h
 
 WORKDIR /
 
-COPY service-account-cafecoder.json .
 COPY default.cf .
 COPY Rocket.toml .
 COPY --from=builder /work/target/release/cafecoder-docker-rs app
-COPY --from=builder /work/.env .env
 
 RUN source $HOME/.profile && dotnet -v ; exit 0
 

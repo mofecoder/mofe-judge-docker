@@ -46,7 +46,7 @@ pub async fn judge(
     // TODO download checker source and confirm testlib.h location and checker temporary location
     let checker_source_path: PathBuf = crate::JUDGE_DIR.join("checker.cpp");
     let checker_target_path: PathBuf = crate::JUDGE_DIR.join("checker");
-    let testlib_path: PathBuf = PathBuf::from("/testlib.h");
+    let testlib_path: PathBuf = PathBuf::from("/opt/testlib/testlib.h");
     match compile_checker(&checker_source_path, &checker_target_path, &testlib_path) {
         Ok(_) => (),
         // TODO confirm error message (may not be internal server error)
@@ -91,8 +91,6 @@ async fn try_testcases(
     let mut testcase_result_map = HashMap::new();
 
     for testcase in &req.testcases {
-        eprintln!("testing submit code...");
-        let start = time::Instant::now();
         let conn = Arc::clone(&conn);
         let testcase_data = gcp
             .download_testcase(&req.problem.uuid, &testcase.name)
@@ -104,15 +102,27 @@ async fn try_testcases(
         let cmd_result = exec_execute_cmd(&req.cmd, req.time_limit as f64 / 1000.0).await?;
         dbg!(&cmd_result);
 
+        let user_output = fs::read(&crate::JUDGE_DIR.join("userStdout.txt"))?;
+        let user_error = fs::read(&crate::JUDGE_DIR.join("userStderr.txt"))?;
+        let user_output = String::from_utf8(user_output)?;
+        let user_error = String::from_utf8(user_error)?;
+        if !cmd_result.ok {
+            println!(
+                "RE[exit {}](Submission#{}/testcase#{})\nstdout: {}\nstderr: {}\n",
+                cmd_result.exit_code,
+                req.submit_id,
+                testcase.testcase_id,
+                user_output.replace("\n", "\\n"),
+                user_error.replace("\n", "\\n")
+            );
+        }
         let testcase_result = {
-            let user_output = fs::read(&crate::JUDGE_DIR.join("userStdout.txt"))?;
-
             let status = judging(
                 &cmd_result,
                 req.time_limit,
                 req.mem_limit,
                 &String::from_utf8(testcase_data.0)?,
-                &String::from_utf8(user_output)?,
+                &user_output,
                 &String::from_utf8(testcase_data.1)?,
                 checker_path,
             )?;
@@ -134,7 +144,6 @@ async fn try_testcases(
 
         insert_testcase_result(conn, req.submit_id, testcase.testcase_id, &testcase_result).await?;
         testcase_result_map.insert(testcase.testcase_id, testcase_result);
-        eprintln!("done. took {:?}", start.elapsed());
     }
 
     submit_result.testcase_result_map = testcase_result_map;

@@ -52,6 +52,10 @@ cd /judge
 
     Ok(CmdResult {
         ok: meta.exitcode == Some(0),
+        exit_code: match meta.exitcode {
+            Some(code) => code as i32,
+            None => -1,
+        },
         execution_time: (meta.time_wall.unwrap_or(0.0) * 1000.0).floor() as i32,
         stdout_size: message.len(),
         message,
@@ -95,6 +99,7 @@ cd /judge
 
     Ok(CmdResult {
         ok: output.status.success(),
+        exit_code: output.status.code().unwrap_or(-1),
         execution_time: 0,
         stdout_size: message.len(),
         message,

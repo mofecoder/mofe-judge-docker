@@ -15,6 +15,7 @@ pub struct CmdResult {
     pub execution_memory: i32, // KB
     pub ok: bool,              // exit_code == 0
     pub message: String,       // コンパイルメッセージ
+    pub exit_code: i32,        // exit_code
 }
 
 #[derive(Serialize, Deserialize, FromRow, Debug)]
