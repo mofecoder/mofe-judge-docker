@@ -30,9 +30,10 @@ pub fn compile_checker(
             wall_time: Some(60.0),
             cg_mem: Some(1_024_000),
             // Unlimited processes is needed for compiler.
-            dir: Some(vec![
-                format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
-            ]),
+            dir: Some(vec![format!(
+                "/judge={}:rw",
+                crate::JUDGE_DIR.to_string_lossy()
+            )]),
             processes: Some(0),
             full_env: true,
             ..Default::default()
@@ -50,7 +51,7 @@ pub fn compile_checker(
         // TODO confirm what to return
         let error_message = String::from_utf8_lossy(&output.stderr).to_string();
         return Err(anyhow!(
-            "Failed to compile checker (error message below):\n{}",
+            "Failed to compile checker (error message below):\n{}\n",
             &error_message
         ));
     }

@@ -13,6 +13,10 @@ use rocket::State;
 
 #[post("/compile", format = "application/json", data = "<req>")]
 pub async fn compile(req: Json<CompileRequest>, conn: &State<Arc<DbPool>>) -> ApiResponse {
+    if req.cmd.starts_with(":") {
+        return ApiResponse::ok(json!(CompileResponse::empty()));
+    }
+
     let conn = conn.clone();
     let cmd_res = match exec_compile_cmd(&req.cmd, 20).await {
         Ok(cmd_res) => cmd_res,

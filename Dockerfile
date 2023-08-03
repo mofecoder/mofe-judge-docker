@@ -63,7 +63,7 @@ RUN mkdir /opt/ac-library && \
 RUN apt-get install gfortran -y --no-install-recommends
 
 # Java install
-RUN apt-get install openjdk-17-jdk -y --no-install-recommends
+RUN apt-get install openjdk-17-jdk-headless openjdk-17-jdk -y --no-install-recommends
 
 # Python3 install
 RUN apt install libopenblas-dev liblapack-dev -y --no-install-recommends &&\
@@ -137,7 +137,8 @@ RUN apt-get install zip unzip -y --no-install-recommends && \
 ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
 
 # Crystal install
-RUN cd /opt &&  \
+RUN apt-get install -y libpcre2-dev && \
+    cd /opt &&  \
     wget https://github.com/crystal-lang/crystal/releases/download/1.8.2/crystal-1.8.2-1-linux-x86_64.tar.gz && \
     tar -xzf crystal-1.8.2-1-linux-x86_64.tar.gz && \
     ln -s /opt/crystal-1.8.2-1/bin/crystal /bin/crystal && \
@@ -172,7 +173,7 @@ ENV DOTNET_ROOT=$HOME/dotnet
 ENV DOWNLOAD_ROOT=/download
 RUN mkdir /download
 RUN mkdir /box
-RUN mkdir -p /judge/Main && chmod -R 777 /judge
+RUN chmod -R 777 /judge
 RUN chmod 777 /root
 
 WORKDIR /

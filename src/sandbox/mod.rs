@@ -26,22 +26,31 @@ impl Sandbox {
                 if status.success() {
                     Ok(())
                 } else {
-                    Err(anyhow!("isolate is not found. Please make sure you have installed ioi/isolate correctly.")) 
+                    Err(anyhow!("isolate is not found. Please make sure you have installed ioi/isolate correctly."))
                 }
             })
     }
 
     pub fn cleanup(id: SandboxId) -> Result<()> {
-        let ok = Command::new("isolate")
+        let res = Command::new("isolate")
             .args(&["--cg", "--cleanup", &format!("--box-id={}", id)])
-            .status()
-            .map(|result| result.success())
-            .map_err(anyhow::Error::from)?;
+            .output();
+        if res.is_err() {
+            return Err(anyhow!(
+                "Failed to cleanup sandbox (Failed to execute) {}\n",
+                id,
+            ));
+        }
 
-        if ok {
+        let res = res.unwrap();
+        if res.status.success() {
             Ok(())
         } else {
-            Err(anyhow!("Failed to cleanup sandbox {}", id))
+            Err(anyhow!(
+                "Failed to cleanup sandbox {}\n{}\n",
+                id,
+                String::from_utf8(res.stderr).unwrap_or("".to_string())
+            ))
         }
     }
 

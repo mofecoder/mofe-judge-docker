@@ -42,6 +42,7 @@ pub async fn judge(
     {
         return ApiResponse::internal_server_error(e);
     }
+    eprintln!("downloaded. took {:?}", start.elapsed());
 
     // TODO download checker source and confirm testlib.h location and checker temporary location
     let checker_source_path: PathBuf = crate::JUDGE_DIR.join("checker.cpp");
@@ -52,7 +53,7 @@ pub async fn judge(
         // TODO confirm error message (may not be internal server error)
         Err(e) => return ApiResponse::internal_server_error(e),
     };
-    eprintln!("done. took {:?}", start.elapsed());
+    eprintln!("done. took total {:?}", start.elapsed());
 
     let mut submit_result =
         match try_testcases(&req.0, conn.clone(), (*gcp).clone(), &checker_target_path).await {

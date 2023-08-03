@@ -52,6 +52,19 @@ pub struct CompileRequest {
 #[derive(Serialize, Deserialize)]
 pub struct CompileResponse(pub CmdResult);
 
+impl CompileResponse {
+    pub fn empty() -> Self {
+        Self(CmdResult {
+            execution_time: 0,
+            stdout_size: 0,
+            execution_memory: 0,
+            ok: true,
+            message: "".to_string(),
+            exit_code: 0,
+        })
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DownloadRequest {
     pub submit_id: i64,
@@ -91,6 +104,7 @@ pub enum Status {
     RE,
     CE,
     IE,
+    CP,
 }
 
 impl fmt::Display for Status {

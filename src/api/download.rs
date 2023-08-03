@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 #[post("/download", format = "application/json", data = "<req>")]
 pub async fn download(req: Json<DownloadRequest>, gcp: &State<Arc<GcpClient>>) -> ApiResponse {
-    eprintln!("downloading submit source...");
+    eprintln!("downloading submission source...");
     let start = std::time::Instant::now();
     if let Err(e) = gcp
         .download_submit_source(&req.0.code_path, &req.0.filename)
