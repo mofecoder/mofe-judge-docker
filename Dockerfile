@@ -59,12 +59,6 @@ RUN mkdir /opt/ac-library && \
     wget https://github.com/atcoder/ac-library/releases/download/v1.5.1/ac-library.zip && \
     unzip /tmp/ac-library.zip -d /opt/ac-library
 
-# Fortran install
-RUN apt-get install gfortran -y --no-install-recommends
-
-# Java install
-RUN apt-get install openjdk-17-jdk-headless openjdk-17-jdk -y --no-install-recommends
-
 # Python3 install
 RUN apt install libopenblas-dev liblapack-dev -y --no-install-recommends &&\
     wget https://www.python.org/ftp/python/3.11.4/Python-3.11.4.tgz && \
@@ -95,27 +89,6 @@ RUN pypy3 -m ensurepip && \
     sortedcontainers==2.4.0 \
     bitarray==2.8.0
 
-# go install
-RUN cd /tmp && \
-    wget https://go.dev/dl/go1.20.6.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.20.6.linux-amd64.tar.gz
-ENV PATH $PATH:/usr/local/go/bin
-ENV USER=$USER
-
-# Rust install
-RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
-ENV PATH $PATH:/root/.cargo/bin
-RUN \
-    cd judge && \
-    cargo init --bin . && \
-    curl -OL https://raw.githubusercontent.com/cafecoder-dev/language-update/23.07/Rust/Cargo.toml && \
-    cargo build --release
-
-# Nim install
-RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- -y
-ENV PATH $PATH:/root/.nimble/bin
-RUN nimble install https://github.com/zer0-star/Nim-ACL
-
 # Ruby install
 RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y --no-install-recommends && \
     git clone https://github.com/sstephenson/rbenv.git ~/.rbenv && \
@@ -127,6 +100,33 @@ RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y
 ENV PATH $PATH:/root/.rbenv/bin:/root/.rbenv/shims
 RUN gem install rbtree ac-library-rb sorted_set
 
+# Rust install
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH $PATH:/root/.cargo/bin
+RUN \
+    cd judge && \
+    cargo init --bin . && \
+    curl -OL https://raw.githubusercontent.com/cafecoder-dev/language-update/23.07/Rust/Cargo.toml && \
+    cargo build --release
+
+# Fortran install
+RUN apt-get install gfortran -y --no-install-recommends
+
+# Java install
+RUN apt-get install openjdk-17-jdk -y
+
+# go install
+RUN cd /tmp && \
+    wget https://go.dev/dl/go1.20.6.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.20.6.linux-amd64.tar.gz
+ENV PATH $PATH:/usr/local/go/bin
+ENV USER=$USER
+
+# Nim install
+RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- -y
+ENV PATH $PATH:/root/.nimble/bin
+RUN nimble install https://github.com/zer0-star/Nim-ACL
+
 # Kotlin install
 RUN apt-get install zip unzip -y --no-install-recommends && \
     curl -s https://get.sdkman.io | bash && \
@@ -137,12 +137,8 @@ RUN apt-get install zip unzip -y --no-install-recommends && \
 ENV PATH $PATH:/root/.sdkman/candidates/kotlin/current/bin
 
 # Crystal install
-RUN apt-get install -y libpcre2-dev && \
-    cd /opt &&  \
-    wget https://github.com/crystal-lang/crystal/releases/download/1.8.2/crystal-1.8.2-1-linux-x86_64.tar.gz && \
-    tar -xzf crystal-1.8.2-1-linux-x86_64.tar.gz && \
-    ln -s /opt/crystal-1.8.2-1/bin/crystal /bin/crystal && \
-    cd
+RUN apt-get install gnupg ca-certificates apt-transport-https -y --no-install-recommends && \
+    curl -fsSL https://crystal-lang.org/install.sh | bash
 
 # Perl install
 RUN wget https://www.cpan.org/src/5.0/perl-5.38.0.tar.gz && \

@@ -118,6 +118,7 @@ impl fmt::Display for Status {
             Status::RE => "RE",
             Status::CE => "CE",
             Status::IE => "IE",
+            Status::CP => "CP",
         };
 
         write!(f, "{}", s)
@@ -128,6 +129,7 @@ impl Status {
     #[allow(dead_code)]
     pub fn to_priority(&self) -> i32 {
         match *self {
+            Status::CP => 0,
             Status::AC => 1,
             Status::TLE => 2,
             Status::MLE => 3,
