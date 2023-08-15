@@ -35,7 +35,7 @@ cd /judge
             dir: Some(vec![
                 format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
                 "/root=/root:rw".to_string(),
-                "/etc/alternatives".to_string(),
+                "/etc".to_string(),
                 "/opt".to_string(),
                 "/usr".to_string(),
             ]),
