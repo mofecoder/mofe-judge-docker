@@ -37,6 +37,7 @@ cd /judge
                 "/root=/root:rw".to_string(),
                 "/etc/alternatives".to_string(),
                 "/opt".to_string(),
+                "/usr".to_string(),
             ]),
             ..Default::default()
         },
