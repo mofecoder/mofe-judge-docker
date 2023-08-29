@@ -54,14 +54,14 @@ pub async fn scoring(
     let mut score = 0i64;
     for testcase_set in &testcase_sets {
         let mut is_ac = true;
-        for testcase_id in &testcase_set_map[&testcase_set.id] {
+        for testcase_id in testcase_set_map.get(&testcase_set.id).unwrap_or(&vec![]) {
             if submit_result.testcase_result_map[testcase_id].status != Status::AC {
                 is_ac = false;
                 break;
             }
         }
         if is_ac {
-            let point: i64 = testcase_set.points as i64;
+            let point: i64 = testcase_set.points;
             score += point;
         }
     }
