@@ -29,8 +29,8 @@ cd /judge
     let output = sandbox.execute(
         &ExecuteConfig {
             meta: Some(meta_path.to_string_lossy().to_string()),
-            time: Some(time_limit),
-            wall_time: Some(time_limit),
+            time: Some(time_limit + 0.2),
+            wall_time: Some(time_limit * 3),
             full_env: true,
             dir: Some(vec![
                 format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),
@@ -57,7 +57,12 @@ cd /judge
             Some(code) => code as i32,
             None => -1,
         },
-        execution_time: (meta.time_wall.unwrap_or(0.0) * 1000.0).floor() as i32,
+        execution_time: (meta
+            .time_wall
+            .unwrap_or_default()
+            .max(meta.time.unwrap_or_default())
+            * 1000.0)
+            .floor() as i32,
         stdout_size: message.len(),
         message,
         execution_memory: meta.cg_mem.unwrap_or(0) as i32,
