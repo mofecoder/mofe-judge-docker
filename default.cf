@@ -5,8 +5,11 @@
 # must be writeable only to root.
 box_root = /var/local/lib/isolate
 
+# Directory where lock files are created.
+lock_root = /run/isolate/locks
+
 # Root of the control group hierarchy
-cg_root = /sys/fs/cgroup
+cg_root = auto:/run/isolate/cgroup
 
 # If the following variable is defined, the per-box cgroups
 # are created as sub-groups of the named cgroup
