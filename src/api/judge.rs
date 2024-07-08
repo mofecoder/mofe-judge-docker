@@ -118,7 +118,7 @@ async fn try_testcases(
             );
         }
         let testcase_result = {
-            let status = judging(
+            let result = judging(
                 &cmd_result,
                 req.time_limit,
                 req.mem_limit,
@@ -128,7 +128,7 @@ async fn try_testcases(
                 checker_path,
             )?;
 
-            TestcaseResult { status, cmd_result }
+            TestcaseResult { result, cmd_result }
         };
 
         dbg!(&testcase_result);
@@ -156,10 +156,10 @@ async fn try_testcases(
 fn update_result(submit_result: &mut JudgeResponse, testcase_result: &TestcaseResult) -> bool {
     let mut updated = false;
 
-    if testcase_result.status != Status::AC
-        && submit_result.status.to_priority() < testcase_result.status.to_priority()
+    if testcase_result.result.status != Status::AC
+        && submit_result.status.to_priority() < testcase_result.result.status.to_priority()
     {
-        submit_result.status = testcase_result.status;
+        submit_result.status = testcase_result.result.status;
         updated = true;
     }
 
@@ -185,22 +185,22 @@ fn judging(
     user_output: &str,
     testcase_output: &str,
     checker_path: &Path,
-) -> Result<Status> {
+) -> Result<JudgeResult> {
     if cmd_result.execution_time > time_limit {
-        return Ok(Status::TLE);
+        return Ok(JudgeResult::from_status(Status::TLE));
     }
 
     // TODO Sandbox に output limit を渡す
     if cmd_result.stdout_size > MAX_FILE_SIZE {
-        return Ok(Status::OLE);
+        return Ok(JudgeResult::from_status(Status::OLE));
     }
 
     if cmd_result.execution_memory > mem_limit {
-        return Ok(Status::MLE);
+        return Ok(JudgeResult::from_status(Status::MLE));
     }
 
     if !cmd_result.ok {
-        return Ok(Status::RE);
+        return Ok(JudgeResult::from_status(Status::RE));
     }
 
     let result = run_checker(checker_path, testcase_input, user_output, testcase_output)?;
@@ -218,13 +218,14 @@ async fn insert_testcase_result(
 
     sqlx::query(
         r#"
-        INSERT INTO testcase_results (submission_id, testcase_id, status, execution_time, execution_memory, created_at, updated_at)
+        INSERT INTO testcase_results (submission_id, testcase_id, status, score, execution_time, execution_memory, created_at, updated_at)
         VALUES (?, ?, ?, ?, ?, ?, ?)
         "#
     )
     .bind(submit_id)
     .bind(testcase_id)
-    .bind(testcase_result.status.to_string())
+    .bind(testcase_result.result.status.to_string())
+    .bind(testcase_result.result.score.map_or_else(|| String::from("NULL"), |s| s.to_string()))
     .bind(testcase_result.cmd_result.execution_time)
     .bind(testcase_result.cmd_result.execution_memory)
     .bind(Local::now().naive_local())

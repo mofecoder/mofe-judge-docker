@@ -1,10 +1,14 @@
-use anyhow::{anyhow, Result};
 use std::path::Path;
+use std::str::FromStr;
+
+use anyhow::{anyhow, Result};
+use regex::Regex;
 
 use crate::{
-    models::Status,
+    models::Status::*,
     sandbox::{ExecuteConfig, Sandbox},
 };
+use crate::models::JudgeResult;
 
 /// Compile the checker file at `checker_source`, and place the compiled file at `checker_target`.
 /// Pass the path of `testlib.h` as `testlib_path`.
@@ -67,7 +71,7 @@ pub fn run_checker(
     testcase_input: &str,
     user_output: &str,
     testcase_output: &str,
-) -> Result<Status> {
+) -> Result<JudgeResult> {
     let sandbox = Sandbox::create(0)?;
 
     // Copy checker into the sandbox and return new path.
@@ -102,23 +106,49 @@ pub fn run_checker(
             "./ans.txt".to_string(),
         ],
     )?;
-    dbg!("Output: {}", String::from_utf8_lossy(&output.stdout));
-    let output = String::from_utf8_lossy(&output.stderr);
-    dbg!("Stderr: {}", &output);
+    let checker_stdout = String::from_utf8_lossy(&output.stdout);
+    dbg!("Output: {}", checker_stdout.clone());
+    let checker_stderr = String::from_utf8_lossy(&output.stderr);
+    dbg!("Stderr: {}", &checker_stderr);
 
     Sandbox::cleanup(0)?;
+    let score_re = Regex::new(r"^MofeJudge::Score\(([-+]?\d{1,16})\)$").unwrap();
+    let captures = score_re.captures(&checker_stdout);
 
-    if output.starts_with("ok") {
-        Ok(Status::AC)
-    } else {
-        Ok(Status::WA)
+    let score = captures.map(|cap| {
+        i64::from_str(cap.get(1).unwrap().as_str()).unwrap()
+    });
+
+    if checker_stderr.starts_with("ok") {
+        return Ok(JudgeResult {
+            status: AC,
+            score
+        });
     }
+
+    let status_re = Regex::new(r"MofeJudge::Status\((WA|QLE|OLE)\)").unwrap();
+    let captures = status_re.captures(&checker_stdout);
+    let status = captures.map(|cap| {
+        let s = cap.get(1).unwrap().as_str();
+        match s {
+            "WA" => WA,
+            "OLE" => OLE,
+            "QLE" => QLE,
+            _ => WA,
+        }
+    });
+
+    Ok(JudgeResult {
+        status: status.unwrap_or(WA),
+        score
+    })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::path::PathBuf;
+
+    use super::*;
 
     #[test]
     fn test_compile_run_useless_checker_ac() -> Result<()> {
@@ -147,7 +177,10 @@ mod tests {
         compile_checker(&checker_source_path, &checker_target_path, &testlib_path)?;
 
         let result = run_checker(&checker_target_path, "", "output", "output")?;
-        assert_eq!(result, Status::AC);
+        assert_eq!(result, JudgeResult {
+            status: AC,
+            score: None
+        });
 
         Ok(())
     }
@@ -179,7 +212,7 @@ mod tests {
         compile_checker(&checker_source_path, &checker_target_path, &testlib_path)?;
 
         let result = run_checker(&checker_target_path, "", "output", "output")?;
-        assert_eq!(result, Status::WA);
+        assert_eq!(result, JudgeResult { status: WA, score: None });
 
         Ok(())
     }

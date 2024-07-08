@@ -30,7 +30,7 @@ cd /judge
         &ExecuteConfig {
             meta: Some(meta_path.to_string_lossy().to_string()),
             time: Some(time_limit + 0.2),
-            wall_time: Some(time_limit * 3),
+            wall_time: Some(time_limit * 3.0),
             full_env: true,
             dir: Some(vec![
                 format!("/judge={}:rw", crate::JUDGE_DIR.to_string_lossy()),

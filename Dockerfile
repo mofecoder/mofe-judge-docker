@@ -40,14 +40,14 @@ RUN mkdir -p /judge
 RUN apt-get install -y rakudo --no-install-recommends
 
 # C#(.NET) install
-RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/download/pr/85bcc525-4e9c-471e-9c1d-96259aa1a315/930833ef34f66fe9ee2643b0ba21621a/dotnet-sdk-8.0.201-linux-x64.tar.gz && \
+RUN wget -O dotnet-sdk.tar.gz https://download.visualstudio.microsoft.com/download/pr/dd6ee0c0-6287-4fca-85d0-1023fc52444b/874148c23613c594fc8f711fc0330298/dotnet-sdk-8.0.302-linux-x64.tar.gz && \
     mkdir -p $HOME/dotnet && tar zxf dotnet-sdk.tar.gz -C $HOME/dotnet
 ENV PATH $PATH:/root/dotnet
 ENV DOTNET_ROOT /root/dotnet
 ENV DOTNET_EnableWriteXorExecute 0
 ENV COMPlus_EnableDiagnostics 0
 RUN cd /judge && \
-    curl -L https://raw.githubusercontent.com/cafecoder-dev/language-update/23.07/CSharp/Main.csproj -o Main.csproj && \
+    curl -L https://raw.githubusercontent.com/mofecoder/language-update/24.07/CSharp/Main.csproj -o Main.csproj && \
     echo 'Console.WriteLine();' > Main.cs && \
     dotnet publish -o /tmp -c Release -v q --nologo 1>&2 && \
     rm Main.cs
@@ -64,9 +64,9 @@ RUN apt-get install clang-16 -y --no-install-recommends
 
 # Python3 install
 RUN apt install libopenblas-dev liblapack-dev -y --no-install-recommends &&\
-    wget https://www.python.org/ftp/python/3.12.2/Python-3.12.2.tgz && \
-    tar xzf Python-3.12.2tgz && \
-    cd Python-3.12.2 && \
+    wget https://www.python.org/ftp/python/3.12.4/Python-3.12.4.tgz && \
+    tar xzf Python-3.12.4.tgz && \
+    cd Python-3.12.4 && \
     ./configure --enable-optimizations && \
     make && \
     make install
@@ -80,9 +80,9 @@ RUN python3.12 -m pip install git+https://github.com/not522/ac-library-python \
 
 # PyPy3 install
 RUN cd /opt && \
-    wget https://downloads.python.org/pypy/pypy3.10-v7.3.15-linux64.tar.bz2 && \
-    tar xf pypy3.10-v7.3.15-linux64.tar.bz2 && \
-    ln -s /opt/pypy3.10-v7.3.15-linux64/bin/pypy3 /bin/pypy3
+    wget https://downloads.python.org/pypy/pypy3.10-v7.3.16-linux64.tar.bz2 && \
+    tar xf pypy3.10-v7.3.16-linux64.tar.bz2 && \
+    ln -s /opt/pypy3.10-v7.3.16-linux64/bin/pypy3 /bin/pypy3
 RUN pypy3 -m ensurepip && \
     pypy3 -m pip install --break-system-packages \
     git+https://github.com/not522/ac-library-python \
@@ -99,7 +99,7 @@ RUN apt-get install make libffi-dev openssl libssl-dev zlib1g-dev libyaml-dev -y
     echo 'eval "$(rbenv init -)"' >> ~/.profile && \
     bash -c exec $SHELL -l && \
     git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build && \
-    export PATH="$HOME/.rbenv/bin:$PATH" && rbenv install 3.2.3 && rbenv global 3.2.3
+    export PATH="$HOME/.rbenv/bin:$PATH" && rbenv install 3.3.2 && rbenv global 3.3.2
 ENV PATH $PATH:/root/.rbenv/bin:/root/.rbenv/shims
 RUN gem install rbtree ac-library-rb sorted_set
 
@@ -109,7 +109,7 @@ ENV PATH $PATH:/root/.cargo/bin
 RUN \
     cd judge && \
     cargo init --bin . && \
-    curl -OL https://raw.githubusercontent.com/cafecoder-dev/language-update/23.07/Rust/Cargo.toml && \
+    curl -OL https://raw.githubusercontent.com/mofecoder/language-update/24.07/Rust/Cargo.toml && \
     cargo build --release
 
 # Fortran install
@@ -120,13 +120,13 @@ RUN apt-get install openjdk-17-jdk -y
 
 # go install
 RUN cd /tmp && \
-    wget https://go.dev/dl/go1.22.0.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go1.22.0.linux-amd64.tar.gz
+    wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.22.5.linux-amd64.tar.gz
 ENV PATH $PATH:/usr/local/go/bin
 ENV USER=$USER
 
 # Nim install
-RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- 2.0.2 -y
+RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- 2.0.8 -y
 ENV PATH $PATH:/root/.nimble/bin
 RUN nimble install https://github.com/zer0-star/Nim-ACL
 

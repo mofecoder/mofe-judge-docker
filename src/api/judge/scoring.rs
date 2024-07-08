@@ -7,6 +7,36 @@ use std::{
     collections::{hash_map::Entry, HashMap},
     sync::Arc,
 };
+use crate::models::{AggregateType, TestcaseResult};
+
+fn aggregate_testcase_set(
+    testcase_set: &TestcaseSets,
+    testcase_ids: &Vec<i64>,
+    testcase_results: &HashMap<i64, TestcaseResult>
+) -> i64 {
+    let agg = testcase_set.aggregate_type;
+    let mut total = agg.id();
+    if agg == AggregateType::None {
+        let mut is_ac = true;
+        for testcase_id in testcase_ids {
+            if testcase_results[testcase_id].result.status != Status::AC {
+                is_ac = false;
+                break;
+            }
+        }
+        if is_ac {
+            total += testcase_set.points;
+        }
+        return total
+    }
+    for testcase_id in testcase_ids {
+        let testcase_score = testcase_results[testcase_id].result.score;
+        if testcase_score.is_some() {
+            total = agg.update(total, testcase_score.unwrap())
+        }
+    }
+    if total == agg.id() { 0 } else { total }
+}
 
 pub async fn scoring(
     conn: Arc<DbPool>,
@@ -20,7 +50,7 @@ pub async fn scoring(
     let conn = Arc::as_ref(&conn);
     let testcase_sets: Vec<TestcaseSets> = sqlx::query_as(
         r#"
-    SELECT id, points FROM testcase_sets
+    SELECT id, points, aggregate_type FROM testcase_sets
     WHERE deleted_at IS NULL AND problem_id = ?
     "#,
     )
@@ -52,18 +82,13 @@ pub async fn scoring(
     }
 
     let mut score = 0i64;
+
     for testcase_set in &testcase_sets {
-        let mut is_ac = true;
-        for testcase_id in testcase_set_map.get(&testcase_set.id).unwrap_or(&vec![]) {
-            if submit_result.testcase_result_map[testcase_id].status != Status::AC {
-                is_ac = false;
-                break;
-            }
-        }
-        if is_ac {
-            let point: i64 = testcase_set.points;
-            score += point;
-        }
+        score += aggregate_testcase_set(
+            testcase_set,
+            testcase_set_map.get(&testcase_set.id).unwrap_or(&vec![]),
+            &submit_result.testcase_result_map,
+        );
     }
 
     Ok(score)

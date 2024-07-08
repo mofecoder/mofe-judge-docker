@@ -17,7 +17,6 @@ pub async fn compile(req: Json<CompileRequest>, conn: &State<Arc<DbPool>>) -> Ap
         return ApiResponse::ok(json!(CompileResponse::empty()));
     }
 
-    let conn = conn.clone();
     let cmd_res = match exec_compile_cmd(&req.cmd, 20).await {
         Ok(cmd_res) => cmd_res,
         Err(e) => return ApiResponse::internal_server_error(e),

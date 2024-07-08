@@ -1,10 +1,12 @@
-use serde::{Deserialize, Serialize};
-use sqlx::FromRow;
 use std::{collections::HashMap, fmt, fmt::Debug};
+
+use serde::{Deserialize, Serialize};
+use sqlx::database::HasValueRef;
+use sqlx::FromRow;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct TestcaseResult {
-    pub status: Status,
+    pub result: JudgeResult,
     pub cmd_result: CmdResult,
 }
 
@@ -31,10 +33,51 @@ pub struct Testcase {
     pub name: String,
 }
 
+#[derive(Deserialize, Serialize, Copy, Clone, PartialEq, sqlx::Type)]
+#[repr(i32)]
+pub enum AggregateType {
+    None,
+    Sum,
+    Max,
+    Min
+}
+
+impl From<i32> for AggregateType {
+    fn from(value: i32) -> Self {
+        match value {
+            0 => Self::None,
+            1 => Self::Sum,
+            2 => Self::Max,
+            3 => Self::Min,
+            _ => unreachable!()
+        }
+    }
+}
+
+impl AggregateType {
+    pub fn id(&self) -> i64 {
+        if *self == Self::Min {
+            i64::MAX
+        } else {
+            0
+        }
+    }
+
+    pub fn update(&self, total: i64, score: i64) -> i64 {
+        match *self {
+            Self::None => 0,
+            Self::Min => total.min(score),
+            Self::Max => total.max(score),
+            Self::Sum => total + score,
+        }
+    }
+}
+
 #[derive(sqlx::FromRow)]
 pub struct TestcaseSets {
     pub id: i64,
     pub points: i64,
+    pub aggregate_type: AggregateType,
 }
 
 #[derive(sqlx::FromRow)]
@@ -93,6 +136,21 @@ pub struct JudgeResponse {
     pub testcase_result_map: HashMap<i64, TestcaseResult>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq)]
+pub struct JudgeResult {
+    pub status: Status,
+    pub score: Option<i64>,
+}
+
+impl JudgeResult {
+    pub fn from_status(status: Status) -> Self {
+        Self {
+            status,
+            score: None
+        }
+    }
+}
+
 #[allow(clippy::unknown_clippy_lints)]
 #[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq)]
 pub enum Status {
@@ -105,6 +163,7 @@ pub enum Status {
     CE,
     IE,
     CP,
+    QLE,
 }
 
 impl fmt::Display for Status {
@@ -114,6 +173,7 @@ impl fmt::Display for Status {
             Status::TLE => "TLE",
             Status::MLE => "MLE",
             Status::OLE => "OLE",
+            Status::QLE => "QLE",
             Status::WA => "WA",
             Status::RE => "RE",
             Status::CE => "CE",
@@ -134,10 +194,11 @@ impl Status {
             Status::TLE => 2,
             Status::MLE => 3,
             Status::OLE => 4,
-            Status::WA => 5,
-            Status::RE => 6,
-            Status::CE => 7,
-            Status::IE => 8,
+            Status::QLE => 5,
+            Status::WA => 6,
+            Status::RE => 7,
+            Status::CE => 8,
+            Status::IE => 9,
         }
     }
 }
