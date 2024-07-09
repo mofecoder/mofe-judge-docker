@@ -116,6 +116,7 @@ pub fn run_checker(
     let captures = score_re.captures(&checker_stdout);
 
     let score = captures.map(|cap| {
+        eprintln!("score: {}", cap.get(1).map_or_else(|| "None", |c| c.as_str()));
         i64::from_str(cap.get(1).unwrap().as_str()).unwrap()
     });
 
