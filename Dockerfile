@@ -62,6 +62,10 @@ RUN mkdir /opt/ac-library && \
 # C/C++ (clang) install
 RUN apt-get install clang-16 -y --no-install-recommends
 
+# Fortran install
+RUN apt-get install gfortran -y --no-install-recommends
+
+
 # Python3 install
 RUN apt install libopenblas-dev liblapack-dev -y --no-install-recommends &&\
     wget https://www.python.org/ftp/python/3.12.4/Python-3.12.4.tgz && \
@@ -70,9 +74,9 @@ RUN apt install libopenblas-dev liblapack-dev -y --no-install-recommends &&\
     ./configure --enable-optimizations && \
     make && \
     make install
-RUN python3.12 -m pip install git+https://github.com/not522/ac-library-python \
-    numpy==1.25.0 \
-    scipy==1.11.1 \
+RUN python3.12 -m pip install --upgrade pip && \
+    python3.12 -m pip install setuptools && \
+    python3.12 -m pip install git+https://github.com/not522/ac-library-python \
     networkx==3.1 \
     sympy==1.12 \
     sortedcontainers==2.4.0 \
@@ -84,8 +88,11 @@ RUN cd /opt && \
     tar xf pypy3.10-v7.3.16-linux64.tar.bz2 && \
     ln -s /opt/pypy3.10-v7.3.16-linux64/bin/pypy3 /bin/pypy3
 RUN pypy3 -m ensurepip && \
+    pypy3 -m pip install --upgrade pip && \
+    pypy3 -m pip install setuptools && \
     pypy3 -m pip install --break-system-packages \
     git+https://github.com/not522/ac-library-python \
+    setuptools \
     numpy==1.25.0 \
     networkx==3.1 \
     sympy==1.12 \
@@ -112,9 +119,6 @@ RUN \
     curl -OL https://raw.githubusercontent.com/mofecoder/language-update/24.07/Rust/Cargo.toml && \
     cargo build --release
 
-# Fortran install
-RUN apt-get install gfortran -y --no-install-recommends
-
 # Java install
 RUN apt-get install openjdk-17-jdk -y
 
@@ -126,7 +130,7 @@ ENV PATH $PATH:/usr/local/go/bin
 ENV USER=$USER
 
 # Nim install
-RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- 2.0.8 -y
+RUN curl https://nim-lang.org/choosenim/init.sh -sSf | sh -s -- -y 2.0.8
 ENV PATH $PATH:/root/.nimble/bin
 RUN nimble install https://github.com/zer0-star/Nim-ACL
 
@@ -159,7 +163,7 @@ RUN mkdir /opt/testlib && \
 
 # install isolate
 RUN \
-    apt-get install libcap-dev --no-install-recommends && \
+    apt-get install libsystemd-dev libcap-dev --no-install-recommends && \
     git clone https://github.com/ioi/isolate.git /isolate
 COPY ./default.cf /isolate/default.cf
 RUN cd /isolate && make install

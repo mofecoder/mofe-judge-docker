@@ -26,7 +26,6 @@ pub struct ExecuteConfig {
 
     pub cg: bool,
     pub cg_mem: Option<u64>,
-    pub cg_timing: bool,
 }
 
 impl Default for ExecuteConfig {
@@ -57,7 +56,6 @@ impl Default for ExecuteConfig {
 
             cg: true,
             cg_mem: None,
-            cg_timing: true,
         }
     }
 }
@@ -105,7 +103,6 @@ impl ExecuteConfig {
         push_flag!("--full-env", self.full_env);
         push_flag!("--no-default-dir", self.no_default_dir);
         push_flag!("--cg", self.cg);
-        push_flag!("--cg-timing", self.cg_timing);
 
         // 一個以上使える引数を処理する
         if let Some(env) = &self.env {
