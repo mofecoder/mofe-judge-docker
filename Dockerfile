@@ -164,7 +164,8 @@ RUN mkdir /opt/testlib && \
 # install isolate
 RUN \
     apt-get install libsystemd-dev libcap-dev --no-install-recommends && \
-    git clone https://github.com/ioi/isolate.git /isolate
+    git clone https://github.com/ioi/isolate.git /isolate && \
+    git checkout -b master refs/tags/1.10.1
 COPY ./default.cf /isolate/default.cf
 RUN cd /isolate && make install
 
