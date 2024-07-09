@@ -219,7 +219,7 @@ async fn insert_testcase_result(
     sqlx::query(
         r#"
         INSERT INTO testcase_results (submission_id, testcase_id, status, score, execution_time, execution_memory, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         "#
     )
     .bind(submit_id)
