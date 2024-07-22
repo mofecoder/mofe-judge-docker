@@ -87,10 +87,6 @@ pub fn run_checker(
     let answer_path = sandbox.path.join("ans.txt");
     std::fs::write(&answer_path, testcase_output)?;
 
-    dbg!("Testcase input: {}", &testcase_input);
-    dbg!("User output:    {}", &user_output);
-    dbg!("Testcase output:{}", &testcase_output);
-
     let output = sandbox.execute(
         &ExecuteConfig {
             // TODO confirm time limit and memory limit
@@ -107,9 +103,9 @@ pub fn run_checker(
         ],
     )?;
     let checker_stdout = String::from_utf8_lossy(&output.stdout);
-    dbg!("Output: {}", checker_stdout.clone());
+    dbg!("[Checker Output]\n{}\n", checker_stdout.clone());
     let checker_stderr = String::from_utf8_lossy(&output.stderr);
-    dbg!("Stderr: {}", &checker_stderr);
+    dbg!("[Checker Stderr]{}\n", &checker_stderr);
 
     Sandbox::cleanup(0)?;
     let score_re = Regex::new(r"MofeJudge::Score\(([-+]?\d{1,16})\)").unwrap();
