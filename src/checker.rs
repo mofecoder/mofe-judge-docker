@@ -123,7 +123,7 @@ pub fn run_checker(
         });
     }
 
-    let status_re = Regex::new(r"MofeJudge::Status\((WA|QLE|OLE)\)").unwrap();
+    let status_re = Regex::new(r"MofeJudge::Status\((WA|QLE|OLE)\)")?;
     let captures = status_re.captures(&checker_stdout);
     let status = captures.map(|cap| {
         let s = cap.get(1).unwrap().as_str();

@@ -1,7 +1,5 @@
 use std::{collections::HashMap, fmt, fmt::Debug};
-
 use serde::{Deserialize, Serialize};
-use sqlx::database::HasValueRef;
 use sqlx::FromRow;
 
 #[derive(Deserialize, Serialize, Debug)]
