@@ -8,6 +8,7 @@ use std::{
     sync::Arc,
 };
 use crate::models::{AggregateType, TestcaseResult};
+use crate::models::Status::*;
 
 fn aggregate_testcase_set(
     testcase_set: &TestcaseSets,
@@ -30,8 +31,13 @@ fn aggregate_testcase_set(
         return total
     }
     for testcase_id in testcase_ids {
-        let testcase_score = testcase_results[testcase_id].result.score;
-        if testcase_score.is_some() {
+        let result = testcase_results[testcase_id].result;
+        let testcase_score = result.score;
+
+        if result.status == TLE || result.status == RE ||
+            result.status == MLE || result.status == OLE {
+            total = agg.update(total, 0);
+        } else if result.score.is_some() {
             total = agg.update(total, testcase_score.unwrap())
         }
     }
@@ -43,7 +49,7 @@ pub async fn scoring(
     req: &JudgeRequest,
     submit_result: &JudgeResponse,
 ) -> Result<i64> {
-    if Status::IE == submit_result.status || Status::CE == submit_result.status {
+    if IE == submit_result.status || CE == submit_result.status {
         return Ok(0);
     }
 
