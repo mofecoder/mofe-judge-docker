@@ -3,6 +3,7 @@ use std::{collections::HashMap, fmt, fmt::Debug};
 use serde::{Deserialize, Serialize};
 use sqlx::database::HasValueRef;
 use sqlx::FromRow;
+use crate::models::Status::WA;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct TestcaseResult {
@@ -146,7 +147,13 @@ impl JudgeResult {
     pub fn from_status(status: Status) -> Self {
         Self {
             status,
-            score: None
+            score: match status {
+                Status::TLE => Some(0),
+                Status::MLE => Some(0),
+                Status::OLE => Some(0),
+                Status::RE => Some(0),
+                _ => None,
+            }
         }
     }
 }

@@ -112,7 +112,7 @@ pub fn run_checker(
     dbg!("Stderr: {}", &checker_stderr);
 
     Sandbox::cleanup(0)?;
-    let score_re = Regex::new(r"MofeJudge::Score\(([-+]?\d{1,16})\)").unwrap();
+    let score_re = Regex::new(r"MofeJudge::Score\(([-+]?\d{1,16})\)")?;
     let captures = score_re.captures(&checker_stdout);
 
     let score = captures.map(|cap| {

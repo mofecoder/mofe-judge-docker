@@ -225,7 +225,7 @@ async fn insert_testcase_result(
     .bind(submit_id)
     .bind(testcase_id)
     .bind(testcase_result.result.status.to_string())
-    .bind(testcase_result.result.score.map_or_else(|| String::from("NULL"), |s| s.to_string()))
+    .bind(testcase_result.result.score)
     .bind(testcase_result.cmd_result.execution_time)
     .bind(testcase_result.cmd_result.execution_memory)
     .bind(Local::now().naive_local())

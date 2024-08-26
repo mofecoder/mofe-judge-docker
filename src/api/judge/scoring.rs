@@ -20,7 +20,7 @@ fn aggregate_testcase_set(
     if agg == AggregateType::None {
         let mut is_ac = true;
         for testcase_id in testcase_ids {
-            if testcase_results[testcase_id].result.status != Status::AC {
+            if testcase_results[testcase_id].result.status != AC {
                 is_ac = false;
                 break;
             }
